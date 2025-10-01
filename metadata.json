@@ -1,0 +1,5 @@
+{
+  "name": "PKLI HR Recruitment Dashboard",
+  "description": "A comprehensive application to manage the entire recruitment and onboarding workflow, from staffing plans and requisitions to interviews, offers, and post-onboarding alerts, based on the PKLI & RC Lahore process.",
+  "requestFramePermissions": []
+}
