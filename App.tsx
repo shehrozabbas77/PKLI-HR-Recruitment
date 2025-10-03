@@ -130,7 +130,7 @@ const App: React.FC = () => {
     <div className="h-screen bg-slate-50 flex flex-col">
       <Header activeStep={activeStep} setActiveStep={setActiveStep} steps={NAVIGATION_STRUCTURE} />
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-6 lg:p-8">
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-8 flex justify-between items-center print-hidden">
           <div>
             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{activeStepInfo?.title || ''}</h2>
             <p className="text-base text-slate-500 mt-1 max-w-2xl">{activeStepInfo?.description || ''}</p>

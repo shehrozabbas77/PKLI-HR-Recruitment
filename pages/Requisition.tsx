@@ -5,6 +5,7 @@ import { Modal } from '../components/Modal';
 import { ApprovalWorkflow } from '../components/ApprovalWorkflow';
 import { ApprovalModal } from '../components/ApprovalModal';
 import { UserIcon, BuildingIcon, BriefcaseIcon, CheckIcon, XIcon, FilePlusIcon } from '../components/icons';
+import { departmentSections } from '../constants';
 
 interface RequisitionProps {
   requisitions: Requisition[];
@@ -27,7 +28,7 @@ const CompactApprovalWorkflow: React.FC<{ status: RequisitionStatus; history: Ap
     if (status === 'Pending Director/Dean Approval') currentStepIndex = 1;
     else if (status === 'Pending HR Review') currentStepIndex = 2;
     else if (status === 'Approved') currentStepIndex = 3;
-    else if (status === 'Rejected') {
+    else if (status === 'Rejected' || status === 'Needs Revision') {
         const rejectedIdx = history.findIndex(h => h.status === 'Rejected');
         currentStepIndex = rejectedIdx !== -1 ? rejectedIdx : 0;
     }
@@ -39,7 +40,7 @@ const CompactApprovalWorkflow: React.FC<{ status: RequisitionStatus; history: Ap
 
                 if (status === 'Approved') {
                     stepStatus = 'completed';
-                } else if (status === 'Rejected') {
+                } else if (status === 'Rejected' || status === 'Needs Revision') {
                     if (index < currentStepIndex) stepStatus = 'completed';
                     else if (index === currentStepIndex) stepStatus = 'rejected';
                     else stepStatus = 'pending';
@@ -58,7 +59,7 @@ const CompactApprovalWorkflow: React.FC<{ status: RequisitionStatus; history: Ap
                 
                 const style = colors[stepStatus];
                 const isCompleted = stepStatus === 'completed';
-                const connectorStyle = (index < currentStepIndex && status !== 'Rejected') || status === 'Approved' ? colors.completed.line : colors.pending.line;
+                const connectorStyle = (index < currentStepIndex && !(status === 'Rejected' || status === 'Needs Revision')) || status === 'Approved' ? colors.completed.line : colors.pending.line;
 
 
                 return (
@@ -112,7 +113,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
   const [selectedPositionStaffingInfo, setSelectedPositionStaffingInfo] = useState<{ budgeted: number, onBoard: number; vacant: number } | null>(null);
   const [selectedJobDescription, setSelectedJobDescription] = useState<JobDescription | null>(null);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
-  const [approvalAction, setApprovalAction] = useState<'approve' | 'reject' | null>(null);
+  const [approvalAction, setApprovalAction] = useState<'approve' | 'reject' | 'return' | null>(null);
   const [departmentFilter, setDepartmentFilter] = useState('All Departments');
   const [sectionFilter, setSectionFilter] = useState('All Sections');
   const [positionFilter, setPositionFilter] = useState('All Positions');
@@ -142,12 +143,25 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
     return ['All Positions', ...Array.from(new Set(relevantRequisitions.map(r => r.position)))];
   }, [requisitions, departmentFilter, sectionFilter]);
 
+  const formDepartments = useMemo(() => [...new Set(staffingPlan.map(p => p.department))].sort(), [staffingPlan]);
+
+  const designationsForSelectedDept = useMemo(() => {
+    if (!newRequisitionData.department) return [];
+    const departmentPositions = staffingPlan.filter(p => p.department === newRequisitionData.department);
+    const designations = new Set(departmentPositions.map(p => p.designation));
+    return Array.from(designations).sort();
+  }, [staffingPlan, newRequisitionData.department]);
+
+  const availableSections = useMemo(() => departmentSections[newRequisitionData.department] || [], [newRequisitionData.department]);
+
+
   const filteredRequisitions = useMemo(() => {
     const pendingStatuses: RequisitionStatus[] = [
       'Pending HOD Approval',
       'Pending Director/Dean Approval',
       'Pending HR Review',
-      'Rejected'
+      'Rejected',
+      'Needs Revision'
     ];
     const approvedStatuses: RequisitionStatus[] = ['Approved'];
     
@@ -189,39 +203,58 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewRequisitionData(prev => ({ ...prev, [name]: value }));
+    if (name === 'department') {
+        setNewRequisitionData(prev => ({ 
+            ...initialFormData,
+            department: value 
+        }));
+        setSelectedPositionStaffingInfo(null);
+        setSelectedJobDescription(null);
+    } else {
+        setNewRequisitionData(prev => ({ ...prev, [name]: value }));
+    }
   };
   
-  const handlePositionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const jdId = parseInt(e.target.value, 10);
-    const selectedJd = approvedJobDescriptions.find(jd => jd.id === jdId);
+  const handleDesignationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedDesignation = e.target.value;
     
-    setSelectedPositionStaffingInfo(null);
+    const selectedJd = approvedJobDescriptions.find(jd => 
+        jd.designation === selectedDesignation && 
+        jd.department === newRequisitionData.department
+    );
+    
+    let newData = {
+        ...newRequisitionData,
+        position: selectedDesignation,
+        section: '',
+        qualification: '',
+        experience: '',
+        requiredSkills: '',
+        licenseRequirement: 'No' as 'Yes' | 'No',
+        jobDescription: '',
+    };
+    
     setSelectedJobDescription(selectedJd || null);
 
     if (selectedJd) {
-        setNewRequisitionData(prev => ({
-            ...prev,
-            position: selectedJd.designation,
-            department: selectedJd.department,
+        newData = {
+            ...newData,
             section: selectedJd.section,
             qualification: Array.isArray(selectedJd.qualification) ? selectedJd.qualification.join(', ') : selectedJd.qualification,
             experience: selectedJd.experience,
             requiredSkills: selectedJd.skills,
             licenseRequirement: Array.isArray(selectedJd.registrationLicense) && selectedJd.registrationLicense.some(lic => lic.toLowerCase() !== 'n/a') ? 'Yes' : 'No',
             jobDescription: `Internal JD #${selectedJd.id}`,
-        }));
+        };
+    }
+    
+    setNewRequisitionData(newData);
 
-        const positionInfo = staffingPlan.find(p => p.designation === selectedJd.designation);
-        if (positionInfo) {
-            setSelectedPositionStaffingInfo({ budgeted: positionInfo.positions2526, onBoard: positionInfo.onBoard, vacant: positionInfo.vacant });
-        }
-
+    const positionInfo = staffingPlan.find(p => p.designation === selectedDesignation && p.department === newRequisitionData.department);
+    if (positionInfo) {
+        setSelectedPositionStaffingInfo({ budgeted: positionInfo.positions2526, onBoard: positionInfo.onBoard, vacant: positionInfo.vacant });
     } else {
-        setNewRequisitionData(prev => ({
-            ...prev,
-            ...initialFormData,
-        }));
+        setSelectedPositionStaffingInfo(null);
     }
   };
 
@@ -230,7 +263,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
     setFormError('');
 
     if (!newRequisitionData.position) {
-        setFormError('Please select a position from an approved Job Description.');
+        setFormError('Please select a position.');
         return;
     }
 
@@ -261,7 +294,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
     setIsCreateModalOpen(false);
   };
 
-  const updateRequisitionStatus = (requisitionId: number, approve: boolean, remarks: string, signature: string) => {
+  const updateRequisitionStatus = (requisitionId: number, action: 'approve' | 'reject' | 'return', remarks: string, signature: string) => {
     const requisition = requisitions.find(r => r.id === requisitionId);
     if (!requisition) return;
 
@@ -280,7 +313,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
         }
     };
     
-    if (approve) {
+    if (action === 'approve') {
         if (requisition.status === 'Pending HOD Approval') {
             newStatus = 'Pending Director/Dean Approval';
             updateCurrentStep('Approved');
@@ -294,8 +327,11 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
             updateCurrentStep('Reviewed');
             completionDate = now;
         }
-    } else { // Reject
+    } else if (action === 'reject') {
         newStatus = 'Rejected';
+        updateCurrentStep('Rejected');
+    } else if (action === 'return') {
+        newStatus = 'Needs Revision';
         updateCurrentStep('Rejected');
     }
     
@@ -310,15 +346,15 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
     setSelectedRequisition(updatedRequisition);
 };
 
-  const handleApprovalAction = (e: React.MouseEvent, action: 'approve' | 'reject') => {
+  const handleApprovalAction = (e: React.MouseEvent, action: 'approve' | 'reject' | 'return') => {
     e.stopPropagation();
     setApprovalAction(action);
     setIsApprovalModalOpen(true);
   };
 
-  const handleConfirmApproval = (remarks: string, signature: string) => {
+  const handleConfirmApproval = (remarks: string) => {
     if (selectedRequisition && approvalAction) {
-        updateRequisitionStatus(selectedRequisition.id, approvalAction === 'approve', remarks, signature);
+        updateRequisitionStatus(selectedRequisition.id, approvalAction, remarks, "Current User");
     }
     setIsApprovalModalOpen(false);
     setApprovalAction(null);
@@ -330,7 +366,8 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
         case 'Pending Director/Dean Approval': return 1;
         case 'Pending HR Review': return 2;
         case 'Approved': return 3;
-        case 'Rejected': {
+        case 'Rejected':
+        case 'Needs Revision': {
             const history = selectedRequisition?.approvalHistory || [];
             const rejectedStep = history.find(s => s.status === 'Rejected');
             if (rejectedStep?.role.includes('HOD')) return 0;
@@ -433,8 +470,12 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                             <p className="text-sm text-gray-600 italic mt-1 truncate" title={req.justification}>"{req.justification}"</p>
                         </div>
                         <div className="col-span-4 px-4">
-                            {activeTab === 'approved' || req.status === 'Rejected' ? (
-                                 <span className={`px-3 py-1 text-base font-semibold rounded-full ${req.status === 'Approved' ? 'bg-green-100 text-green-700' : `bg-[#fde8e9] text-[#c01823]`}`}>
+                            {activeTab === 'approved' || req.status === 'Rejected' || req.status === 'Needs Revision' ? (
+                                 <span className={`px-3 py-1 text-base font-semibold rounded-full ${
+                                     req.status === 'Approved' ? 'bg-green-100 text-green-700' : 
+                                     req.status === 'Rejected' ? 'bg-[#fde8e9] text-[#c01823]' : 
+                                     'bg-amber-100 text-amber-700'
+                                 }`}>
                                     {req.status}
                                 </span>
                             ) : (
@@ -503,13 +544,13 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                 stepNames={['HOD', 'Director/Dean', 'HR Review', 'Approved']}
                 currentStepIndex={getApprovalStepIndex(selectedRequisition.status)}
                 isCompleted={selectedRequisition.status === 'Approved'}
-                isRejected={selectedRequisition.status === 'Rejected'}
+                isRejected={selectedRequisition.status === 'Rejected' || selectedRequisition.status === 'Needs Revision'}
                 approvalHistory={selectedRequisition.approvalHistory}
                 completionDate={selectedRequisition.completionDate}
               />
             </div>
           </div>
-           {selectedRequisition && (selectedRequisition.status !== 'Approved' && selectedRequisition.status !== 'Rejected') && (
+           {selectedRequisition && (selectedRequisition.status !== 'Approved' && selectedRequisition.status !== 'Rejected' && selectedRequisition.status !== 'Needs Revision') && (
               <div className="flex justify-end pt-6 space-x-3 border-t mt-6">
                   <button 
                       type="button" 
@@ -517,6 +558,13 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                       className="px-4 py-2 bg-[#c01823] text-white rounded-md hover:bg-[#9a131c] text-base font-semibold transition-colors"
                   >
                       Reject
+                  </button>
+                  <button 
+                      type="button" 
+                      onClick={(e) => handleApprovalAction(e, 'return')}
+                      className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 text-base font-semibold transition-colors"
+                  >
+                      Return with Comments
                   </button>
                   <button 
                       type="button" 
@@ -536,19 +584,37 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                 {/* Left Column */}
                 <div className="space-y-6">
                     <div>
+                        <label htmlFor="department" className="block text-base font-semibold text-gray-600 mb-2">Department</label>
+                        <select 
+                            id="department" 
+                            name="department" 
+                            value={newRequisitionData.department} 
+                            onChange={handleInputChange} 
+                            required 
+                            className="w-full bg-white border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#93c5fd] focus:border-[#0076b6] text-base px-4 py-3"
+                        >
+                            <option value="">Select a department</option>
+                            {formDepartments.map(dept => (
+                                <option key={dept} value={dept}>{dept}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
                         <label htmlFor="position" className="block text-base font-semibold text-gray-600 mb-2">Position Title</label>
                          <select 
                             id="position" 
                             name="position" 
-                            value={approvedJobDescriptions.find(jd => jd.designation === newRequisitionData.position)?.id || ''} 
-                            onChange={handlePositionChange} 
+                            value={newRequisitionData.position}
+                            onChange={handleDesignationChange}
                             required 
-                            className="w-full bg-white border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#93c5fd] focus:border-[#0076b6] text-base px-4 py-3"
+                            disabled={!newRequisitionData.department}
+                            className="w-full bg-white border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#93c5fd] focus:border-[#0076b6] text-base px-4 py-3 disabled:bg-gray-100"
                         >
-                            <option value="">Select an approved Job Description</option>
-                            {approvedJobDescriptions.map(jd => (
-                                <option key={jd.id} value={jd.id}>
-                                    {jd.designation}
+                            <option value="">Select a position from Staffing Plan</option>
+                            {designationsForSelectedDept.map(designation => (
+                                <option key={designation} value={designation}>
+                                    {designation}
                                 </option>
                             ))}
                         </select>
@@ -556,21 +622,28 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
 
                     <div className="grid grid-cols-2 gap-6">
                         <div>
-                            <label htmlFor="department" className="block text-base font-semibold text-gray-600 mb-2">Department</label>
-                            <input type="text" id="department" value={newRequisitionData.department} readOnly className="w-full bg-gray-100 border-gray-300 rounded-lg shadow-sm text-base px-4 py-3" />
+                            <label htmlFor="section" className="block text-base font-semibold text-gray-600 mb-2">Section</label>
+                            <select 
+                                id="section" 
+                                name="section" 
+                                value={newRequisitionData.section} 
+                                onChange={handleInputChange} 
+                                required
+                                disabled={!newRequisitionData.department}
+                                className="w-full bg-white border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#93c5fd] focus:border-[#0076b6] text-base px-4 py-3 disabled:bg-gray-100"
+                            >
+                                <option value="">Select a section</option>
+                                {availableSections.map(sec => <option key={sec} value={sec}>{sec}</option>)}
+                            </select>
                         </div>
                         <div>
-                            <label htmlFor="section" className="block text-base font-semibold text-gray-600 mb-2">Section</label>
-                            <input type="text" id="section" value={newRequisitionData.section} readOnly className="w-full bg-gray-100 border-gray-300 rounded-lg shadow-sm text-base px-4 py-3" />
+                            <label htmlFor="fiscalYear" className="block text-base font-semibold text-gray-600 mb-2">Fiscal Year</label>
+                            <select id="fiscalYear" name="fiscalYear" value={newRequisitionData.fiscalYear} onChange={handleInputChange} className="w-full bg-white border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#93c5fd] focus:border-[#0076b6] text-base px-4 py-3">
+                                <option>2026-2027</option>
+                                <option>2025-2026</option>
+                                <option>2024-2025</option>
+                            </select>
                         </div>
-                    </div>
-                     <div>
-                        <label htmlFor="fiscalYear" className="block text-base font-semibold text-gray-600 mb-2">Fiscal Year</label>
-                        <select id="fiscalYear" name="fiscalYear" value={newRequisitionData.fiscalYear} onChange={handleInputChange} className="w-full bg-white border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#93c5fd] focus:border-[#0076b6] text-base px-4 py-3">
-                            <option>2026-2027</option>
-                            <option>2025-2026</option>
-                            <option>2024-2025</option>
-                        </select>
                     </div>
                     
                     {selectedPositionStaffingInfo && (
@@ -680,7 +753,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
           onClose={() => setIsApprovalModalOpen(false)}
           onConfirm={handleConfirmApproval}
           action={approvalAction}
-          title={`${approvalAction === 'approve' ? 'Approve' : 'Reject'} Requisition`}
+          title={`${approvalAction === 'approve' ? 'Approve' : approvalAction === 'return' ? 'Return' : 'Reject'} Requisition`}
         />
       )}
     </div>

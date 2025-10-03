@@ -502,9 +502,12 @@ const ApprovalForHire: React.FC<ApprovalForHireProps> = ({ candidates, setCandid
         setIsApprovalModalOpen(true);
     };
 
-    const handleConfirmApproval = (remarks: string, signature: string) => {
+    const handleConfirmApproval = (remarks: string) => {
         if (!selectedCandidate || !approvalAction) return;
-
+    
+        // In a real app, the user's name would be fetched from the session.
+        const signature = "Current User";
+    
         const workflowRoles = getApprovalWorkflowForCandidate(selectedCandidate);
         
         let currentHistory: ApprovalStepType[];
@@ -513,18 +516,18 @@ const ApprovalForHire: React.FC<ApprovalForHireProps> = ({ candidates, setCandid
         } else {
             currentHistory = workflowRoles.map(role => ({ role, status: 'Pending' as 'Pending' }));
         }
-
+    
         const currentStepIndex = currentHistory.findIndex((s) => s.status === 'Pending');
-
+    
         if (currentStepIndex === -1) {
             setIsApprovalModalOpen(false);
             setApprovalAction(null);
             return;
         }
-
+    
         let newStatus: CandidateStatus = selectedCandidate.status;
         const now = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-
+    
         if (approvalAction === 'approve') {
             currentHistory[currentStepIndex].status = 'Approved';
             if (currentStepIndex === currentHistory.length - 1) {
@@ -534,7 +537,7 @@ const ApprovalForHire: React.FC<ApprovalForHireProps> = ({ candidates, setCandid
             currentHistory[currentStepIndex].status = 'Rejected';
             newStatus = 'Rejected';
         }
-
+    
         currentHistory[currentStepIndex].date = now;
         currentHistory[currentStepIndex].approver = signature;
         currentHistory[currentStepIndex].comments = remarks;
@@ -544,10 +547,10 @@ const ApprovalForHire: React.FC<ApprovalForHireProps> = ({ candidates, setCandid
             status: newStatus,
             finalApprovalHistory: currentHistory,
         };
-
+    
         setCandidates(prev => prev.map(c => c.id === selectedCandidate.id ? updatedCandidate : c));
         setSelectedCandidate(updatedCandidate);
-
+    
         setIsApprovalModalOpen(false);
         setApprovalAction(null);
     };

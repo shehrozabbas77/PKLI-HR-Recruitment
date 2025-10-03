@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import type { Candidate, CandidateStatus, JobAdvertisement } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -71,25 +70,17 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
     const [positionFilter, setPositionFilter] = useState('All');
     const [selectedCandidateIds, setSelectedCandidateIds] = useState<number[]>([]);
     const [isFetching, setIsFetching] = useState(false);
+    const [selectedAdId, setSelectedAdId] = useState<number | null>(null);
+    const [dataFetchedForAd, setDataFetchedForAd] = useState<number | null>(null);
 
     const handleGetData = () => {
+        if (!selectedAdId) return;
         setIsFetching(true);
         setTimeout(() => {
-            const maxId = candidates.length > 0 ? Math.max(...candidates.map(c => c.id)) : 0;
-            const newPortalCandidates: Omit<Candidate, 'id'>[] = [
-                { name: 'Zohaib Hassan', positionAppliedFor: 'Sr. Database Administrator', department: 'ICT', section: 'Infrastructure', cnic: '35202-1112233-1', qualification: 'MCS', experienceYears: 7, organization: 'TechLogix', contact: '0300-9876543', city: 'Lahore', remarks: 'Fetched from portal.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], appliedDate: new Date().toISOString().split('T')[0], adReference: 'AD-1', preInterviewFormSent: false },
-                { name: 'Amina Sheikh', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35201-2223344-2', qualification: 'MBBS', experienceYears: 2, organization: 'Shalamar Hospital', contact: '0321-8765432', city: 'Lahore', remarks: 'Fetched from portal.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], appliedDate: new Date().toISOString().split('T')[0], adReference: 'AD-2', preInterviewFormSent: false },
-                { name: 'Faisal Qureshi', positionAppliedFor: 'Admin Officer', department: 'Administration', section: 'General Administration', cnic: '35201-3334455-3', qualification: 'BBA', experienceYears: 3, organization: 'Services Hospital', contact: '0333-7654321', city: 'Karachi', remarks: 'Fetched from portal.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], appliedDate: new Date().toISOString().split('T')[0], adReference: 'AD-4', preInterviewFormSent: false },
-            ];
-
-            const candidatesToAdd = newPortalCandidates.map((c, index) => ({
-                ...c,
-                id: maxId + 1 + index,
-            }));
-
-            setCandidates(prev => [...candidatesToAdd, ...prev]);
+            setDataFetchedForAd(selectedAdId);
             setIsFetching(false);
-            alert(`${candidatesToAdd.length} new applications have been successfully fetched from the portal.`);
+            const ad = advertisements.find(a => a.id === selectedAdId);
+            alert(`Applicant data for "${ad?.title}" has been successfully fetched from the portal.`);
         }, 1500);
     };
 
@@ -171,7 +162,17 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
     };
 
     const filteredCandidates = useMemo(() => {
-        return stageCandidates.filter(c => {
+        if (stage === 'collection' && !dataFetchedForAd) {
+            return [];
+        }
+
+        let candidatesToFilter = stageCandidates;
+
+        if (stage === 'collection' && dataFetchedForAd) {
+            candidatesToFilter = stageCandidates.filter(c => c.adReference === `AD-${dataFetchedForAd}`);
+        }
+
+        return candidatesToFilter.filter(c => {
             const checkFilter = () => {
                 if (filter === 'All') return true;
                 if (filter === 'New') return c.status === 'New';
@@ -200,7 +201,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
             return checkFilter() && checkSearch() && checkDepartment && checkSection && checkPosition;
         });
 
-    }, [stageCandidates, filter, searchTerm, departmentFilter, sectionFilter, positionFilter]);
+    }, [stageCandidates, filter, searchTerm, departmentFilter, sectionFilter, positionFilter, stage, dataFetchedForAd]);
 
     const selectableCandidates = useMemo(() => {
         if (stage === 'collection') {
@@ -373,25 +374,76 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         </div>
     );
 
+    if (stage === 'collection' && !dataFetchedForAd) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expiredAds = advertisements.filter(ad => new Date(ad.deadline) < today);
+
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle>Fetch Applicant Data from Portal</CardTitle>
+                    <CardDescription>Select an advertisement with a past deadline to fetch applicant data.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-3 max-h-[60vh] overflow-y-auto p-2 border rounded-md bg-slate-50">
+                        {expiredAds.length > 0 ? expiredAds.map(ad => (
+                            <div 
+                                key={ad.id} 
+                                onClick={() => setSelectedAdId(ad.id)}
+                                className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedAdId === ad.id ? 'bg-blue-100 border-blue-500 ring-2 ring-blue-500' : 'bg-white hover:bg-gray-100'}`}
+                            >
+                                <p className="font-bold text-gray-800">{ad.title}</p>
+                                <p className="text-sm text-gray-500">Deadline: {ad.deadline} | Published: {ad.publishedOn || 'N/A'} | Positions: {ad.positions.length}</p>
+                            </div>
+                        )) : (
+                            <div className="text-center py-10 text-gray-500">
+                                <p>No expired advertisements found.</p>
+                            </div>
+                        )}
+                    </div>
+                    <div className="mt-6 pt-6 border-t flex justify-end">
+                        <button
+                            onClick={handleGetData}
+                            disabled={!selectedAdId || isFetching}
+                            className="px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-base font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center shadow-sm hover:shadow-md"
+                        >
+                            {isFetching ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Fetching...
+                                </>
+                            ) : (
+                                'Get Data from Portal'
+                            )}
+                        </button>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <>
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-start">
                         <div>
-                            <CardTitle>{config.title}</CardTitle>
-                            <CardDescription>{config.description}</CardDescription>
-                        </div>
-                        <div className="flex items-center space-x-2 flex-wrap justify-end">
-                            {stage === 'collection' && (
-                                <button
-                                    onClick={handleGetData}
-                                    disabled={isFetching}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-base font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                >
-                                    {isFetching ? 'Fetching...' : 'Get Data from Portal'}
+                             {stage === 'collection' && dataFetchedForAd && (
+                                <button onClick={() => { setDataFetchedForAd(null); setSelectedAdId(null); }} className="text-sm font-semibold text-blue-600 hover:text-blue-800 mb-2 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                                    Select Another Advertisement
                                 </button>
                             )}
+                            <CardTitle>{config.title}</CardTitle>
+                            <CardDescription>
+                                {stage === 'collection' && dataFetchedForAd ? `Displaying applicants for "${advertisements.find(a => a.id === dataFetchedForAd)?.title}"` : config.description}
+                            </CardDescription>
+                        </div>
+                        <div className="flex items-center space-x-2 flex-wrap justify-end">
                             {config.filters.map(option => (
                                 <button 
                                     key={option} 

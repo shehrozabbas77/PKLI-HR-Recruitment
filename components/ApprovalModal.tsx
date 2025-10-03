@@ -1,23 +1,20 @@
-
 import React, { useState } from 'react';
 import { Modal } from './Modal';
 
 interface ApprovalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (remarks: string, signature: string) => void;
-  action: 'approve' | 'reject';
+  onConfirm: (remarks: string) => void;
+  action: 'approve' | 'reject' | 'return';
   title: string;
 }
 
 export const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, onConfirm, action, title }) => {
   const [remarks, setRemarks] = useState('');
-  const [signature, setSignature] = useState('');
 
   const handleConfirm = () => {
-    onConfirm(remarks, signature);
+    onConfirm(remarks);
     setRemarks('');
-    setSignature('');
   };
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -37,20 +34,8 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, o
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder={action === 'reject' ? "Please provide a reason for rejection." : "Optional comments..."}
-            required={action === 'reject'}
-          />
-        </div>
-        <div>
-          <label htmlFor="signature" className="block text-sm font-medium text-gray-700">Signature (Full Name)</label>
-          <input
-            type="text"
-            id="signature"
-            value={signature}
-            onChange={(e) => setSignature(e.target.value)}
-            className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Type your full name"
-            required
+            placeholder={action === 'reject' ? "Please provide a reason for rejection." : action === 'return' ? "Please provide comments for returning." : "Optional comments..."}
+            required={action === 'reject' || action === 'return'}
           />
         </div>
         <div>
@@ -69,14 +54,16 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, o
         <button
           type="button"
           onClick={handleConfirm}
-          disabled={!signature || (action === 'reject' && !remarks)}
+          disabled={(action === 'reject' || action === 'return') && !remarks.trim()}
           className={`px-4 py-2 text-white rounded-md text-base font-semibold transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed ${
             action === 'approve'
               ? 'bg-green-600 hover:bg-green-700'
-              : 'bg-red-600 hover:bg-red-700'
+              : action === 'reject' 
+                ? 'bg-red-600 hover:bg-red-700'
+                : 'bg-amber-500 hover:bg-amber-600'
           }`}
         >
-          {action === 'approve' ? 'Confirm Approval' : 'Confirm Rejection'}
+          {action === 'approve' ? 'Confirm Approval' : action === 'reject' ? 'Confirm Rejection' : 'Confirm Return'}
         </button>
       </div>
     </Modal>

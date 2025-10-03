@@ -8,9 +8,10 @@ const EvaluationHeader: React.FC<{ title: string; candidate: Candidate }> = ({ t
         <img src="https://pkli.org.pk/wp-content/uploads/2020/09/cropped-Insignia_512_512.png" alt="PKLI Logo" className="h-20 w-auto mx-auto mb-2"/>
         <h2 className="text-xl font-bold text-gray-800">PAKISTAN KIDNEY AND LIVER INSTITUTE AND RESEARCH CENTER</h2>
         <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
-        <div className="grid grid-cols-2 gap-4 mt-4 text-left text-sm p-2 bg-gray-50 rounded-md border">
+        <div className="grid grid-cols-3 gap-4 mt-4 text-left text-sm p-2 bg-gray-50 rounded-md border">
             <p><strong>Candidate Name:</strong> {candidate.name}</p>
             <p><strong>Position:</strong> {candidate.positionAppliedFor}</p>
+            <p><strong>Interview Date:</strong> {candidate.interviewTime ? new Date(candidate.interviewTime).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}</p>
         </div>
     </div>
 );
@@ -24,8 +25,7 @@ const EvaluationFooter: React.FC<{
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                 <InputField label="Current Salary & Benefits:" name="current_salary" type="text" value={(data.comments as any).current_salary} onChange={e => onChange(`comments.current_salary`, e.target.value)} />
                 <InputField label="Expected Salary:" name="expected_salary" type="text" value={(data.comments as any).expected_salary} onChange={e => onChange(`comments.expected_salary`, e.target.value)} />
-                <InputField label="Interview Date:" name="interview_date" type="date" value={(data.comments as any).interview_date} onChange={e => onChange(`comments.interview_date`, e.target.value)} />
-                <InputField label="Time required for joining:" name="joining_time" type="text" value={(data.comments as any).joining_time} onChange={e => onChange(`comments.joining_time`, e.target.value)} />
+                <InputField label="Time required for joining (Days):" name="joining_time" type="text" value={(data.comments as any).joining_time} onChange={e => onChange(`comments.joining_time`, e.target.value)} />
                 <InputField label="Interviewer Name:" name="interviewer_name" type="text" value={data.panelMemberName} onChange={() => {}} />
                 <div>
                     <label className="block text-sm font-medium text-gray-700">Interviewer Signature:</label>

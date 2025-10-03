@@ -46,7 +46,8 @@ export type RequisitionStatus =
   | 'Pending Director/Dean Approval'
   | 'Pending HR Review'
   | 'Approved'
-  | 'Rejected';
+  | 'Rejected'
+  | 'Needs Revision';
 
 export interface Requisition {
   id: number;
@@ -197,7 +198,8 @@ export type JobDescriptionStatus =
   | 'Pending HOD Approval'
   | 'Pending HR Review'
   | 'Approved'
-  | 'Rejected';
+  | 'Rejected'
+  | 'Needs Revision';
 
 export interface JobDescription {
   id: number;

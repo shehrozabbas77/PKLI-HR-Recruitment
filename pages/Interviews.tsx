@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { Candidate, PanelMember, SelectionBoard, InterviewStatus, PanelEvaluation, PanelMemberStatus, Notification, JobAdvertisement, Requisition, CandidateStatus } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { SelectionBoardModal } from '../components/SelectionBoardModal';
-import { ClipboardListIcon, EditIcon, MailIcon, ClockIcon, CheckIcon, UsersIcon, EyeIcon } from '../components/icons';
+import { ClipboardListIcon, EditIcon, MailIcon, ClockIcon, CheckIcon, UsersIcon, EyeIcon, PrinterIcon, UploadIcon } from '../components/icons';
 import { departmentSections } from '../constants';
 import { RegretLetterModal } from '../components/RegretLetterModal';
 
@@ -25,6 +25,9 @@ const CandidateComparison: React.FC<CandidateComparisonProps> = ({
     const [departmentFilter, setDepartmentFilter] = useState('All');
     const [sectionFilter, setSectionFilter] = useState('All');
     const [positionFilter, setPositionFilter] = useState('All');
+    
+    const [uploadedSheets, setUploadedSheets] = useState<Record<string, boolean>>({});
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const evaluatedOrCompletedCandidates = useMemo(() =>
         candidates.filter(c => c.evaluation && c.evaluation.length > 0),
@@ -113,157 +116,243 @@ const CandidateComparison: React.FC<CandidateComparisonProps> = ({
             setRegretModalCandidate(null);
         }
     };
+    
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file && positionFilter !== 'All') {
+            setUploadedSheets(prev => ({ ...prev, [positionFilter]: true }));
+            setNotification({
+                type: 'success',
+                message: `Approved sheet "${file.name}" for ${positionFilter} has been uploaded.`
+            });
+        }
+        if (event.target) {
+            event.target.value = '';
+        }
+    };
+
 
     return (
         <>
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-start flex-wrap gap-4">
-                        <div>
+            <div id="printable-comparative">
+                <Card>
+                    <CardHeader>
+                        <div className="print-hidden">
+                            <div className="flex justify-between items-start flex-wrap gap-4">
+                                <div>
+                                    <CardTitle>Comparative of Interviews</CardTitle>
+                                    <CardDescription>Compare evaluated candidates and make a hiring decision.</CardDescription>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handlePrint}
+                                        disabled={positionFilter === 'All'}
+                                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-semibold text-sm flex items-center disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    >
+                                        <PrinterIcon className="w-4 h-4 mr-2" />
+                                        Print
+                                    </button>
+                                    <button
+                                        onClick={handleUploadClick}
+                                        disabled={positionFilter === 'All'}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold text-sm flex items-center disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    >
+                                        <UploadIcon className="w-4 h-4 mr-2" />
+                                        Upload Approved Sheet
+                                    </button>
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                        accept=".pdf,.doc,.docx,.jpg,.png"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex items-end gap-6 flex-wrap mt-4 pt-4 border-t">
+                                <div>
+                                    <label htmlFor="comp-dept-filter" className="text-sm font-medium text-slate-600">Department</label>
+                                    <div className="relative mt-1">
+                                        <select id="comp-dept-filter" value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} className="w-64 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
+                                            {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                                            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="comp-sec-filter" className="text-sm font-medium text-slate-600">Section</label>
+                                    <div className="relative mt-1">
+                                        <select id="comp-sec-filter" value={sectionFilter} onChange={e => setSectionFilter(e.target.value)} className="w-64 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
+                                            {sections.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                                            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="comp-pos-filter" className="text-sm font-medium text-slate-600">Position</label>
+                                    <div className="relative mt-1 flex items-center gap-2">
+                                        <select id="comp-pos-filter" value={positionFilter} onChange={e => setPositionFilter(e.target.value)} className="w-64 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
+                                            {positions.map(p => <option key={p} value={p}>{p}</option>)}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                                            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                                        </div>
+                                        {uploadedSheets[positionFilter] && (
+                                            <div className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center whitespace-nowrap">
+                                                <CheckIcon className="w-4 h-4 mr-1" />
+                                                Uploaded
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="hidden print:block">
                             <CardTitle>Comparative of Interviews</CardTitle>
-                            <CardDescription>Compare evaluated candidates and make a hiring decision.</CardDescription>
+                            <CardDescription>Position: {positionFilter}</CardDescription>
                         </div>
-                        <div className="flex items-end gap-6 flex-wrap">
-                            <div>
-                                <label htmlFor="comp-dept-filter" className="text-sm font-medium text-slate-600">Department</label>
-                                <div className="relative mt-1">
-                                    <select id="comp-dept-filter" value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} className="w-64 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
-                                        {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
-                                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-                                    </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="text-xs text-gray-500 uppercase border-b bg-gray-50">
+                                    <tr>
+                                        <th className="px-4 py-3 font-medium text-center">Merit #</th>
+                                        <th className="px-4 py-3 font-medium">First Name</th>
+                                        <th className="px-4 py-3 font-medium">Last Name</th>
+                                        <th className="px-4 py-3 font-medium">CNIC</th>
+                                        <th className="px-4 py-3 font-medium">Qualification</th>
+                                        <th className="px-4 py-3 font-medium text-center">Exp. (Yrs)</th>
+                                        <th className="px-4 py-3 font-medium text-right">Current Salary</th>
+                                        <th className="px-4 py-3 font-medium text-right">Expected Salary</th>
+                                        {allPanelists.map(name => (
+                                            <th key={name} className="px-4 py-3 font-medium text-center">{name}</th>
+                                        ))}
+                                        <th className="px-4 py-3 font-medium text-center">Avg. Score</th>
+                                        <th className="px-4 py-3 font-medium text-center">Status</th>
+                                        <th className="px-4 py-3 font-medium">Recommended Designation</th>
+                                        <th className="px-4 py-3 font-medium text-center print-hidden">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y text-gray-700">
+                                    {sortedCandidates.map((c, index) => {
+                                        const nameParts = c.name.split(' ');
+                                        const lastName = nameParts.pop() || '';
+                                        const firstName = nameParts.join(' ');
+
+                                        return (
+                                            <tr key={c.id} className="hover:bg-gray-50">
+                                                <td className="px-4 py-4 text-center font-bold text-lg text-gray-800">{index + 1}</td>
+                                                <td className="px-4 py-4 font-semibold">{firstName}</td>
+                                                <td className="px-4 py-4 font-semibold">{lastName}</td>
+                                                <td className="px-4 py-4">{c.cnic}</td>
+                                                <td className="px-4 py-4">{c.qualification}</td>
+                                                <td className="px-4 py-4 text-center">{c.experienceYears}</td>
+                                                <td className="px-4 py-4 text-right">{c.currentSalary?.toLocaleString() || 'N/A'}</td>
+                                                <td className="px-4 py-4 text-right">{c.expectedSalary?.toLocaleString() || 'N/A'}</td>
+                                                {allPanelists.map(panelistName => {
+                                                    const evaluation = c.evaluation?.find(e => e.panelMemberName === panelistName);
+                                                    // FIX: Explicitly cast result of Object.values to number[] to ensure correct type for reduce operation. This resolves the 'toFixed does not exist on type unknown' error.
+                                                    const score = evaluation ? (Object.values(evaluation.scores) as number[]).reduce((sum, s) => sum + s, 0) : null;
+                                                    return <td key={panelistName} className="px-4 py-4 text-center font-semibold">{score !== null ? score.toFixed(1) : '-'}</td>;
+                                                })}
+                                                <td className="px-4 py-4 text-center font-bold text-lg text-blue-600">{c.averageScore.toFixed(2)}</td>
+                                                <td className="px-4 py-4 text-center">
+                                                    <select 
+                                                        value={c.status === 'Recommended for Hire' ? 'Recommended' : c.status === 'Rejected' ? 'Not Recommended' : 'Pending'}
+                                                        onChange={e => handleStatusChange(c.id, e.target.value as any)}
+                                                        className={`w-full text-sm rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 font-semibold ${
+                                                            c.status === 'Recommended for Hire' ? 'bg-green-100 text-green-800' : 
+                                                            c.status === 'Rejected' ? 'bg-red-100 text-red-800' : ''
+                                                        }`}
+                                                    >
+                                                        <option value="Pending">Pending</option>
+                                                        <option value="Recommended">Recommended</option>
+                                                        <option value="Not Recommended">Not Recommended</option>
+                                                    </select>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <input 
+                                                        type="text" 
+                                                        defaultValue={c.recommendedDesignation || c.positionAppliedFor} 
+                                                        onBlur={e => handleDesignationChange(c.id, e.target.value)}
+                                                        className="w-full text-sm p-1 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-4 text-center space-x-1 print-hidden">
+                                                    {/* Success Email Button */}
+                                                    <button
+                                                        onClick={() => { alert(`A success email/offer letter would be sent to ${c.name}. This feature can be built out next.`); }}
+                                                        disabled={c.status !== 'Recommended for Hire'}
+                                                        className="p-2 rounded-full transition-colors text-green-600 hover:bg-green-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                                        title="Send Success Letter"
+                                                        aria-label="Send Success Letter"
+                                                    >
+                                                        <MailIcon className="w-5 h-5" />
+                                                    </button>
+
+                                                    {/* Regret Email Button */}
+                                                    <button
+                                                        onClick={() => setRegretModalCandidate(c)}
+                                                        disabled={c.status !== 'Rejected'}
+                                                        className="p-2 rounded-full transition-colors text-red-600 hover:bg-red-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                                        title="Send Regret Letter"
+                                                        aria-label="Send Regret Letter"
+                                                    >
+                                                        <MailIcon className="w-5 h-5" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                             {sortedCandidates.length === 0 && (
+                                <div className="text-center py-12 text-gray-500">
+                                    <h3 className="text-xl font-semibold">No Evaluated Candidates</h3>
+                                    <p className="mt-2">No candidates match the current filter criteria, or no position is selected.</p>
                                 </div>
-                            </div>
-                            <div>
-                                <label htmlFor="comp-sec-filter" className="text-sm font-medium text-slate-600">Section</label>
-                                <div className="relative mt-1">
-                                    <select id="comp-sec-filter" value={sectionFilter} onChange={e => setSectionFilter(e.target.value)} className="w-64 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
-                                        {sections.map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
-                                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label htmlFor="comp-pos-filter" className="text-sm font-medium text-slate-600">Position</label>
-                                <div className="relative mt-1">
-                                    <select id="comp-pos-filter" value={positionFilter} onChange={e => setPositionFilter(e.target.value)} className="w-64 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
-                                        {positions.map(p => <option key={p} value={p}>{p}</option>)}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
-                                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-                                    </div>
-                                </div>
-                            </div>
+                            )}
                         </div>
+                    </CardContent>
+                </Card>
+                {/* Approval Section for Print View */}
+                <div className="hidden print:flex justify-between items-start mt-32 pt-16 text-xs text-black">
+                    <div className="text-center">
+                        <div className="border-t border-gray-600 w-56 mb-2 mx-auto"></div>
+                        <p>Reviewed by</p>
+                        <p className="font-bold">Aisha Latif</p>
+                        <p>Director HR</p>
+                        <p>PKLI & RC</p>
                     </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-gray-500 uppercase border-b bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-3 font-medium text-center">Merit #</th>
-                                    <th className="px-4 py-3 font-medium">First Name</th>
-                                    <th className="px-4 py-3 font-medium">Last Name</th>
-                                    <th className="px-4 py-3 font-medium">CNIC</th>
-                                    <th className="px-4 py-3 font-medium">Qualification</th>
-                                    <th className="px-4 py-3 font-medium text-center">Exp. (Yrs)</th>
-                                    <th className="px-4 py-3 font-medium text-right">Current Salary</th>
-                                    <th className="px-4 py-3 font-medium text-right">Expected Salary</th>
-                                    {allPanelists.map(name => (
-                                        <th key={name} className="px-4 py-3 font-medium text-center">{name}</th>
-                                    ))}
-                                    <th className="px-4 py-3 font-medium text-center">Avg. Score</th>
-                                    <th className="px-4 py-3 font-medium text-center">Status</th>
-                                    <th className="px-4 py-3 font-medium">Recommended Designation</th>
-                                    <th className="px-4 py-3 font-medium text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y text-gray-700">
-                                {sortedCandidates.map((c, index) => {
-                                    const nameParts = c.name.split(' ');
-                                    const lastName = nameParts.pop() || '';
-                                    const firstName = nameParts.join(' ');
-
-                                    return (
-                                        <tr key={c.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-4 text-center font-bold text-lg text-gray-800">{index + 1}</td>
-                                            <td className="px-4 py-4 font-semibold">{firstName}</td>
-                                            <td className="px-4 py-4 font-semibold">{lastName}</td>
-                                            <td className="px-4 py-4">{c.cnic}</td>
-                                            <td className="px-4 py-4">{c.qualification}</td>
-                                            <td className="px-4 py-4 text-center">{c.experienceYears}</td>
-                                            <td className="px-4 py-4 text-right">{c.currentSalary?.toLocaleString() || 'N/A'}</td>
-                                            <td className="px-4 py-4 text-right">{c.expectedSalary?.toLocaleString() || 'N/A'}</td>
-                                            {allPanelists.map(panelistName => {
-                                                const evaluation = c.evaluation?.find(e => e.panelMemberName === panelistName);
-                                                // FIX: Explicitly cast result of Object.values to number[] to ensure correct type for reduce operation. This resolves the 'toFixed does not exist on type unknown' error.
-                                                const score = evaluation ? (Object.values(evaluation.scores) as number[]).reduce((sum, s) => sum + s, 0) : null;
-                                                return <td key={panelistName} className="px-4 py-4 text-center font-semibold">{score !== null ? score.toFixed(1) : '-'}</td>;
-                                            })}
-                                            <td className="px-4 py-4 text-center font-bold text-lg text-blue-600">{c.averageScore.toFixed(2)}</td>
-                                            <td className="px-4 py-4 text-center">
-                                                <select 
-                                                    value={c.status === 'Recommended for Hire' ? 'Recommended' : c.status === 'Rejected' ? 'Not Recommended' : 'Pending'}
-                                                    onChange={e => handleStatusChange(c.id, e.target.value as any)}
-                                                    className={`w-full text-sm rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 font-semibold ${
-                                                        c.status === 'Recommended for Hire' ? 'bg-green-100 text-green-800' : 
-                                                        c.status === 'Rejected' ? 'bg-red-100 text-red-800' : ''
-                                                    }`}
-                                                >
-                                                    <option value="Pending">Pending</option>
-                                                    <option value="Recommended">Recommended</option>
-                                                    <option value="Not Recommended">Not Recommended</option>
-                                                </select>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <input 
-                                                    type="text" 
-                                                    defaultValue={c.recommendedDesignation || c.positionAppliedFor} 
-                                                    onBlur={e => handleDesignationChange(c.id, e.target.value)}
-                                                    className="w-full text-sm p-1 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                                />
-                                            </td>
-                                            <td className="px-4 py-4 text-center space-x-1">
-                                                {/* Success Email Button */}
-                                                <button
-                                                    onClick={() => { alert(`A success email/offer letter would be sent to ${c.name}. This feature can be built out next.`); }}
-                                                    disabled={c.status !== 'Recommended for Hire'}
-                                                    className="p-2 rounded-full transition-colors text-green-600 hover:bg-green-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                                                    title="Send Success Letter"
-                                                    aria-label="Send Success Letter"
-                                                >
-                                                    <MailIcon className="w-5 h-5" />
-                                                </button>
-
-                                                {/* Regret Email Button */}
-                                                <button
-                                                    onClick={() => setRegretModalCandidate(c)}
-                                                    disabled={c.status !== 'Rejected'}
-                                                    className="p-2 rounded-full transition-colors text-red-600 hover:bg-red-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                                                    title="Send Regret Letter"
-                                                    aria-label="Send Regret Letter"
-                                                >
-                                                    <MailIcon className="w-5 h-5" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                         {sortedCandidates.length === 0 && (
-                            <div className="text-center py-12 text-gray-500">
-                                <h3 className="text-xl font-semibold">No Evaluated Candidates</h3>
-                                <p className="mt-2">No candidates match the current filter criteria, or no position is selected.</p>
-                            </div>
-                        )}
+                    <div className="text-center">
+                        <div className="border-t border-gray-600 w-56 mb-2 mx-auto"></div>
+                        <p>Reviewed by</p>
+                        <p className="font-bold">Dr. Faisal Amir</p>
+                        <p>Hospital Director</p>
+                        <p>PKLI & RC</p>
                     </div>
-                </CardContent>
-            </Card>
+                    <div className="text-center">
+                        <div className="border-t border-gray-600 w-56 mb-2 mx-auto"></div>
+                        <p>Reviewed by</p>
+                        <p className="font-bold">Dr. Faisal Saud Dar</p>
+                        <p>Dean</p>
+                        <p>PKLI & RC</p>
+                    </div>
+                </div>
+            </div>
              <RegretLetterModal
                 isOpen={!!regretModalCandidate}
                 onClose={() => setRegretModalCandidate(null)}
@@ -318,6 +407,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isBulkScheduleModalOpen, setIsBulkScheduleModalOpen] = useState(false);
   const [bulkScheduleStartTime, setBulkScheduleStartTime] = useState('');
+  const [bulkNominationJobTitle, setBulkNominationJobTitle] = useState<string | null>(null);
   
   const candidatesForNomination = useMemo(() =>
     candidates.filter(c => c.status === 'Shortlisted for Interview' && c.panelNominationStatus === 'Pending Nomination')
@@ -380,13 +470,22 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
 
   const handleOpenNominationModal = (candidate: Candidate) => {
     setSelectedCandidateForPanel(candidate);
+    setBulkNominationJobTitle(null);
+    setSelectedBoardTitle('');
+    setPanelMemberNames({});
+    setIsNominationModalOpen(true);
+  };
+  
+  const handleOpenBulkNominationModal = (jobTitle: string) => {
+    setBulkNominationJobTitle(jobTitle);
+    setSelectedCandidateForPanel(null);
     setSelectedBoardTitle('');
     setPanelMemberNames({});
     setIsNominationModalOpen(true);
   };
 
   const handleNominationSubmit = () => {
-    if (!selectedCandidateForPanel || !selectedBoardTitle) return;
+    if (!selectedBoardTitle) return;
 
     const selectedBoard = selectionBoards.find(b => b.title === selectedBoardTitle);
     if (!selectedBoard) return;
@@ -403,22 +502,42 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
         status: 'Pending',
         notified: false,
     }));
-
-    setCandidates(prev => prev.map(c => 
-        c.id === selectedCandidateForPanel.id 
-        ? { ...c, 
+    
+    if (bulkNominationJobTitle) {
+      const targetIds = new Set(selectedIds);
+      let updatedCount = 0;
+      setCandidates(prev => prev.map(c => {
+        if (targetIds.has(c.id) && c.positionAppliedFor === bulkNominationJobTitle) {
+          updatedCount++;
+          return {
+            ...c,
             panelNominationStatus: 'Panel Nominated',
             interviewStatus: 'Pending Schedule',
             interviewPanel: newPanelMembers
-          } 
-        : c
-    ));
+          };
+        }
+        return c;
+      }));
+      setNotification({ type: 'success', message: `Panel nominated for ${updatedCount} candidates for ${bulkNominationJobTitle}.`});
+      setSelectedIds(prev => prev.filter(id => !targetIds.has(id)));
+    } else if (selectedCandidateForPanel) {
+      setCandidates(prev => prev.map(c => 
+          c.id === selectedCandidateForPanel.id 
+          ? { ...c, 
+              panelNominationStatus: 'Panel Nominated',
+              interviewStatus: 'Pending Schedule',
+              interviewPanel: newPanelMembers
+            } 
+          : c
+      ));
+      setNotification({ type: 'success', message: `Panel nominated for ${selectedCandidateForPanel.name}.` });
+    }
 
     setIsNominationModalOpen(false);
     setSelectedCandidateForPanel(null);
+    setBulkNominationJobTitle(null);
     setSelectedBoardTitle('');
     setPanelMemberNames({});
-    setNotification({ type: 'success', message: `Panel nominated for ${selectedCandidateForPanel.name}.` });
   };
   
   const handleSetInterviewTime = (candidateId: number, time: string) => {
@@ -659,6 +778,14 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
           </Card>
         );
       case 'panel-nomination':
+        // FIX: Cast the result of Object.entries to a specific tuple array type to ensure TypeScript can correctly infer the types of 'jobTitle' and 'groupCandidates', resolving errors related to 'map' and 'length' properties not existing on type 'unknown'.
+        const groupedForNomination = useMemo(() => {
+          return filteredForNomination.reduce((acc, candidate) => {
+              (acc[candidate.positionAppliedFor] = acc[candidate.positionAppliedFor] || []).push(candidate);
+              return acc;
+          }, {} as Record<string, Candidate[]>);
+        }, [filteredForNomination]);
+
         return (
           <Card>
             <CardHeader>
@@ -678,32 +805,79 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                   </select>
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-                <table className="w-full text-base text-left text-gray-600">
-                    <thead className="text-sm text-gray-700 uppercase bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3">Candidate</th>
-                            <th className="px-6 py-3">Post Applied For</th>
-                            <th className="px-6 py-3 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredForNomination.map(candidate => (
-                            <tr key={candidate.id} className="border-b bg-white">
-                              <td className="px-6 py-4 font-semibold">{candidate.name}</td>
-                              <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
-                              <td className="px-6 py-4 text-center">
-                                    <button onClick={() => handleOpenNominationModal(candidate)} className="px-3 py-1 text-sm font-semibold text-white bg-[#0076b6] rounded-md hover:bg-[#005a8c]">
-                                        Nominate Panel
-                                    </button>
-                              </td>
-                            </tr>
-                        ))}
-                        {filteredForNomination.length === 0 && (
-                            <tr><td colSpan={3} className="text-center py-6 text-gray-500">No candidates available for panel nomination.</td></tr>
-                        )}
-                    </tbody>
-                </table>
+            <CardContent>
+                {Object.keys(groupedForNomination).length > 0 ? (
+                    <div className="space-y-6">
+                        {(Object.entries(groupedForNomination) as [string, Candidate[]][]).map(([jobTitle, groupCandidates]) => {
+                            const selectedInGroup = groupCandidates.filter(c => selectedIds.includes(c.id)).length;
+
+                            const handleSelectAll = () => {
+                                const groupIds = groupCandidates.map(c => c.id);
+                                setSelectedIds(prev => [...new Set([...prev, ...groupIds])]);
+                            };
+                            const handleDeselectAll = () => {
+                                const groupIds = new Set(groupCandidates.map(c => c.id));
+                                setSelectedIds(prev => prev.filter(id => !groupIds.has(id)));
+                            };
+                            
+                            return (
+                                <div key={jobTitle} className="border rounded-lg overflow-hidden">
+                                    <div className="bg-gray-50 p-4 border-b">
+                                        <h3 className="text-lg font-bold text-gray-800">{jobTitle}</h3>
+                                        <p className="text-sm text-gray-500">{groupCandidates.length} candidate(s) awaiting panel nomination.</p>
+                                    </div>
+                                    <div className="p-4 flex items-center justify-between border-b bg-white">
+                                        <div className="flex items-center space-x-2">
+                                            <button onClick={handleSelectAll} className="text-sm font-semibold text-blue-600 hover:text-blue-800">Select All</button>
+                                            <span className="text-gray-300">|</span>
+                                            <button onClick={handleDeselectAll} className="text-sm font-semibold text-blue-600 hover:text-blue-800">Deselect All</button>
+                                        </div>
+                                        <button
+                                            onClick={() => handleOpenBulkNominationModal(jobTitle)}
+                                            disabled={selectedInGroup === 0}
+                                            className="px-4 py-2 bg-[#0076b6] text-white rounded-md text-sm font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                                        >
+                                           <UsersIcon className="w-4 h-4 mr-2" /> Nominate Panel for Selected ({selectedInGroup})
+                                        </button>
+                                    </div>
+                                    <table className="w-full text-base text-left text-gray-600">
+                                        <thead className="text-sm text-gray-700 uppercase bg-gray-50/50">
+                                            <tr>
+                                                <th className="p-4 w-4"><span className="sr-only">Select</span></th>
+                                                <th className="px-6 py-3">Candidate Name</th>
+                                                <th className="px-6 py-3 text-center">Individual Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {groupCandidates.map(candidate => (
+                                                <tr key={candidate.id} className="border-b bg-white last:border-b-0">
+                                                    <td className="p-4">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={selectedIds.includes(candidate.id)} 
+                                                            onChange={() => handleIndividualSelect(candidate.id)}
+                                                            className="h-4 w-4 text-[#0076b6] border-gray-300 rounded focus:ring-[#0076b6]"
+                                                        />
+                                                    </td>
+                                                    <td className="px-6 py-4 font-semibold">{candidate.name}</td>
+                                                    <td className="px-6 py-4 text-center">
+                                                          <button onClick={() => handleOpenNominationModal(candidate)} className="font-medium text-blue-600 hover:underline text-sm">
+                                                              Nominate Panel
+                                                          </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center py-10 text-gray-500">
+                        <p>No candidates available for panel nomination based on the current filter.</p>
+                    </div>
+                )}
             </CardContent>
           </Card>
         );
@@ -837,7 +1011,11 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
         addBoard={addBoard}
       />
 
-      <Modal isOpen={isNominationModalOpen} onClose={() => setIsNominationModalOpen(false)} title={`Nominate Panel for ${selectedCandidateForPanel?.name}`}>
+      <Modal 
+        isOpen={isNominationModalOpen} 
+        onClose={() => setIsNominationModalOpen(false)} 
+        title={bulkNominationJobTitle ? `Nominate Panel for ${bulkNominationJobTitle}` : `Nominate Panel for ${selectedCandidateForPanel?.name}`}
+      >
         <div>
             <label htmlFor="board-select" className="block text-sm font-medium text-gray-700">Select Selection Board</label>
             <select 
@@ -1069,7 +1247,42 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
             </div>
         </Modal>
       )}
-
+      
+      <style>{`
+        @media print {
+            .print-hidden {
+                display: none !important;
+            }
+            .hidden.print\\:block {
+                display: block !important;
+            }
+            body, #root, #root > div, main {
+                display: block !important;
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: white !important;
+            }
+            #printable-comparative {
+                box-shadow: none !important;
+                border: none !important;
+            }
+            #printable-comparative .p-0 { /* From CardContent */
+                padding: 0 !important;
+            }
+            table {
+                font-size: 10px; /* Make table smaller for print */
+            }
+            td, th {
+                padding: 4px 8px !important;
+            }
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+        }
+      `}</style>
     </>
   );
 };

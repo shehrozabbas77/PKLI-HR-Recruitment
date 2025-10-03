@@ -5,7 +5,7 @@ import { Modal } from '../components/Modal';
 import { ApprovalWorkflow } from '../components/ApprovalWorkflow';
 import { ApprovalModal } from '../components/ApprovalModal';
 import { departmentSections } from '../constants';
-import { XIcon, DocumentTextIcon, CheckIcon, EyeIcon } from '../components/icons';
+import { XIcon, DocumentTextIcon, CheckIcon, EyeIcon, EditIcon } from '../components/icons';
 
 interface JobDescriptionPageProps {
   jobDescriptions: JobDescription[];
@@ -18,6 +18,7 @@ const statusColorMap: { [key in JobDescriptionStatus]: string } = {
   'Pending HR Review': 'bg-orange-100 text-orange-800',
   'Approved': 'bg-green-100 text-green-800',
   'Rejected': 'bg-red-100 text-red-800',
+  'Needs Revision': 'bg-amber-100 text-amber-800',
 };
 
 const initialJdFormData = {
@@ -57,6 +58,37 @@ const DetailItem: React.FC<{ label: string, value: string | string[] | React.Rea
         )}
     </div>
 );
+
+const TimelineEvents: React.FC<{ jd: JobDescription }> = ({ jd }) => {
+    const events = jd.approvalHistory
+        .filter(s => s.status !== 'Pending' && s.date)
+        .map(s => ({
+            title: s.role.replace(/ *\([^)]*\) */g, ""), // Remove text in parentheses
+            status: s.status,
+            date: new Date(s.date!).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        }));
+    if (jd.status === 'Approved') {
+        const lastEvent = events[events.length - 1];
+        if (lastEvent) {
+             events.push({ title: 'Finalized', status: 'Approved', date: lastEvent.date });
+        }
+    }
+    
+    return (
+        <div className="mb-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-2">Timeline Summary</h4>
+            <div className="flex space-x-6 overflow-x-auto pb-2">
+                {events.map((event, i) => (
+                    <div key={i} className="flex-shrink-0">
+                        <p className="text-sm font-bold text-gray-700">{event.title}</p>
+                        <p className={`text-xs font-semibold ${event.status === 'Rejected' ? 'text-red-600' : 'text-green-600'}`}>{event.status}</p>
+                        <p className="text-xs text-gray-500">{event.date}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 
 const MultiSelectDropdown: React.FC<{
@@ -141,6 +173,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
   const [newJdData, setNewJdData] = useState(initialJdFormData);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
   const [approvalAction, setApprovalAction] = useState<'approve' | 'reject' | null>(null);
+  const [editingJd, setEditingJd] = useState<JobDescription | null>(null);
   
   // Filter states
   const [departmentFilter, setDepartmentFilter] = useState('All');
@@ -167,7 +200,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
     return ['All', ...Array.from(new Set(relevantSections.map(jd => jd.section)))];
   }, [jobDescriptions, departmentFilter]);
   const designations = useMemo(() => ['All', ...Array.from(new Set(jobDescriptions.map(jd => jd.designation)))], [jobDescriptions]);
-  const statuses: Array<JobDescriptionStatus | 'All'> = ['All', 'Pending HOD Approval', 'Pending HR Review', 'Approved', 'Rejected'];
+  const statuses: Array<JobDescriptionStatus | 'All'> = ['All', 'Pending HOD Approval', 'Pending HR Review', 'Approved', 'Rejected', 'Needs Revision'];
 
   useEffect(() => {
     setSectionFilter('All');
@@ -189,9 +222,30 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
   };
   
   const handleOpenCreateModal = () => {
+    setEditingJd(null);
     setNewJdData(initialJdFormData);
     setIsCreateModalOpen(true);
   }
+
+  const handleEditClick = (e: React.MouseEvent, jd: JobDescription) => {
+    e.stopPropagation(); // Prevent modal from opening
+    setEditingJd(jd);
+    setNewJdData({
+        designation: jd.designation,
+        department: jd.department,
+        section: jd.section,
+        reportsTo: jd.reportsTo,
+        reportingPositions: jd.reportingPositions,
+        qualification: jd.qualification,
+        skills: jd.skills,
+        experience: jd.experience,
+        registrationLicense: jd.registrationLicense,
+        jobSummary: jd.jobSummary,
+        jobFunctions: jd.jobFunctions.join('\n'), // convert array back to string for textarea
+        preparedBy: jd.preparedBy,
+    });
+    setIsCreateModalOpen(true); // Reuse the create modal
+};
 
   const handleUpdateStatus = (id: number, approve: boolean, remarks: string, signature: string) => {
     const jd = jobDescriptions.find(j => j.id === id);
@@ -220,8 +274,8 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
             newStatus = 'Approved';
             updateCurrentStep('Reviewed');
         }
-    } else { // Reject
-        newStatus = 'Rejected';
+    } else { // Return for revision
+        newStatus = 'Needs Revision';
         updateCurrentStep('Rejected');
     }
 
@@ -236,9 +290,10 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
     setIsApprovalModalOpen(true);
   };
 
-  const handleConfirmApproval = (remarks: string, signature: string) => {
+  const handleConfirmApproval = (remarks: string) => {
     if (selectedJd && approvalAction) {
-        handleUpdateStatus(selectedJd.id, approvalAction === 'approve', remarks, signature);
+        // In a real app, the user's name would be fetched from the session.
+        handleUpdateStatus(selectedJd.id, approvalAction === 'approve', remarks, "Current User");
     }
     setIsApprovalModalOpen(false);
     setApprovalAction(null);
@@ -260,22 +315,40 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
 
   const handleJdSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingJd) {
+        // Update logic
+        const updatedJd: JobDescription = {
+            ...editingJd,
+            ...newJdData,
+            jobFunctions: newJdData.jobFunctions.split('\n').filter(line => line.trim() !== ''),
+        };
 
-    const preparedDate = new Date().toISOString().split('T')[0];
+        if (updatedJd.status === 'Needs Revision' || updatedJd.status === 'Rejected') {
+            updatedJd.status = 'Pending HOD Approval';
+            updatedJd.approvalHistory = [
+                { role: 'Prepared By (Supervisor)', status: 'Approved', approver: updatedJd.preparedBy, date: updatedJd.preparedDate },
+                { role: 'Approved By (HOD)', status: 'Pending' }
+            ];
+        }
 
-    const newJd: JobDescription = {
-        id: jobDescriptions.length > 0 ? Math.max(...jobDescriptions.map(jd => jd.id)) + 1 : 1,
-        ...newJdData,
-        jobFunctions: newJdData.jobFunctions.split('\n').filter(line => line.trim() !== ''),
-        status: 'Pending HOD Approval',
-        preparedDate,
-        approvalHistory: [
-            { role: 'Prepared By (Supervisor)', status: 'Approved', approver: newJdData.preparedBy, date: preparedDate },
-            { role: 'Approved By (HOD)', status: 'Pending' }
-        ]
-    };
+        setJobDescriptions(prev => prev.map(jd => jd.id === editingJd.id ? updatedJd : jd));
+    } else {
+        // Create logic
+        const preparedDate = new Date().toISOString().split('T')[0];
+        const newJd: JobDescription = {
+            id: jobDescriptions.length > 0 ? Math.max(...jobDescriptions.map(jd => jd.id)) + 1 : 1,
+            ...newJdData,
+            jobFunctions: newJdData.jobFunctions.split('\n').filter(line => line.trim() !== ''),
+            status: 'Pending HOD Approval',
+            preparedDate,
+            approvalHistory: [
+                { role: 'Prepared By (Supervisor)', status: 'Approved', approver: newJdData.preparedBy, date: preparedDate },
+                { role: 'Approved By (HOD)', status: 'Pending' }
+            ]
+        };
+        setJobDescriptions(prev => [newJd, ...prev]);
+    }
 
-    setJobDescriptions(prev => [newJd, ...prev]);
     setIsCreateModalOpen(false);
   };
   
@@ -284,7 +357,9 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
         case 'Pending HOD Approval': return 1;
         case 'Pending HR Review': return 2;
         case 'Approved': return 3;
-        case 'Rejected': return history.findIndex(s => s.status === 'Rejected');
+        case 'Rejected': 
+        case 'Needs Revision': 
+            return history.findIndex(s => s.status === 'Rejected');
         default: return 0;
     }
   };
@@ -385,14 +460,23 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                         {jd.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleViewDetails(jd)}
-                        className="text-gray-500 hover:text-blue-600 p-1 rounded-full transition-colors"
-                        title="View Details"
-                      >
-                        <EyeIcon className="w-6 h-6" />
-                      </button>
+                    <td className="px-6 py-4 text-center space-x-2">
+                        <button
+                            onClick={() => handleViewDetails(jd)}
+                            className="text-gray-500 hover:text-blue-600 p-1 rounded-full transition-colors inline-block"
+                            title="View Details"
+                        >
+                            <EyeIcon className="w-6 h-6" />
+                        </button>
+                        {['Pending HOD Approval', 'Needs Revision', 'Rejected'].includes(jd.status) && (
+                            <button
+                                onClick={(e) => handleEditClick(e, jd)}
+                                className="text-gray-500 hover:text-green-600 p-1 rounded-full transition-colors inline-block"
+                                title="Edit Details"
+                            >
+                                <EditIcon className="w-5 h-5" />
+                            </button>
+                        )}
                     </td>
                   </tr>
                 ))}
@@ -415,6 +499,8 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
           maxWidth="max-w-4xl"
         >
            <div className="space-y-6">
+                <TimelineEvents jd={selectedJd} />
+
                 <FormSection title="Job Identification">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                     <DetailItem label="Designation" value={selectedJd.designation} />
@@ -458,7 +544,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                     stepNames={['Prepared By: Supervisor/Line Manager', 'Approved By: HOD/Divisional Head', 'Reviewed By: HR', 'Completed']}
                     currentStepIndex={getApprovalStepIndex(selectedJd.status, selectedJd.approvalHistory)}
                     isCompleted={selectedJd.status === 'Approved'}
-                    isRejected={selectedJd.status === 'Rejected'}
+                    isRejected={selectedJd.status === 'Rejected' || selectedJd.status === 'Needs Revision'}
                     approvalHistory={selectedJd.approvalHistory}
                   />
                 </div>
@@ -468,9 +554,9 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
               <button
                 type="button"
                 onClick={() => handleApprovalAction('reject')}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-base font-semibold"
+                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 text-base font-semibold"
               >
-                Reject
+                Return for Revision
               </button>
               <button
                 type="button"
@@ -484,7 +570,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
         </Modal>
       )}
       
-      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Create New Job Description" maxWidth="max-w-6xl">
+      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title={editingJd ? `Edit JD: ${editingJd.designation}` : "Create New Job Description"} maxWidth="max-w-6xl">
         <form onSubmit={handleJdSubmit}>
             <div className="space-y-8">
                 <div>
@@ -589,7 +675,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
           onClose={() => setIsApprovalModalOpen(false)}
           onConfirm={handleConfirmApproval}
           action={approvalAction}
-          title={`${approvalAction === 'approve' ? 'Approve' : 'Reject'} Job Description`}
+          title={`${approvalAction === 'approve' ? 'Approve' : 'Return'} Job Description`}
         />
       )}
     </>
