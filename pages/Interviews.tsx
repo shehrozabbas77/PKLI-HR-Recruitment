@@ -118,7 +118,79 @@ const CandidateComparison: React.FC<CandidateComparisonProps> = ({
     };
     
     const handlePrint = () => {
-        window.print();
+        if (positionFilter === 'All') {
+            alert('Please select a position from the dropdown to print the comparative sheet.');
+            return;
+        }
+
+        const printContentNode = document.getElementById('printable-comparative');
+        if (!printContentNode) return;
+
+        const printWindow = window.open('', '_blank', 'height=800,width=1200');
+
+        if (printWindow) {
+            printWindow.document.title = 'Print Comparative Sheet';
+
+            const tailwindScript = printWindow.document.createElement('script');
+            tailwindScript.src = 'https://cdn.tailwindcss.com';
+            printWindow.document.head.appendChild(tailwindScript);
+            
+            const fontPreconnect1 = printWindow.document.createElement('link');
+            fontPreconnect1.rel = 'preconnect';
+            fontPreconnect1.href = 'https://fonts.googleapis.com';
+            printWindow.document.head.appendChild(fontPreconnect1);
+
+            const fontPreconnect2 = printWindow.document.createElement('link');
+            fontPreconnect2.rel = 'preconnect';
+            fontPreconnect2.href = 'https://fonts.gstatic.com';
+            fontPreconnect2.crossOrigin = 'anonymous';
+            printWindow.document.head.appendChild(fontPreconnect2);
+
+            const fontLink = printWindow.document.createElement('link');
+            fontLink.rel = 'stylesheet';
+            fontLink.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap';
+            printWindow.document.head.appendChild(fontLink);
+
+            const styleEl = printWindow.document.createElement('style');
+            styleEl.textContent = `
+                body { font-family: 'Poppins', sans-serif; }
+                .print-hidden { display: none !important; }
+                .hidden.print\\:block { display: block !important; }
+                body { background: white !important; }
+                #printable-comparative { box-shadow: none !important; border: none !important; }
+                #printable-comparative .p-0 { padding: 0 !important; }
+                table { font-size: 10px; }
+                td, th { padding: 4px 8px !important; }
+                @page { size: landscape; margin: 1cm; }
+            `;
+            printWindow.document.head.appendChild(styleEl);
+
+            const clonedNode = printContentNode.cloneNode(true) as HTMLElement;
+            
+            const originalSelects = printContentNode.querySelectorAll('select');
+            const clonedSelects = clonedNode.querySelectorAll('select');
+            originalSelects.forEach((select, index) => {
+                if (clonedSelects[index]) {
+                    clonedSelects[index].value = select.value;
+                }
+            });
+
+            const originalInputs = printContentNode.querySelectorAll('input[type="text"]');
+            const clonedInputs = clonedNode.querySelectorAll('input[type="text"]');
+            originalInputs.forEach((input, index) => {
+                if (clonedInputs[index]) {
+                    (clonedInputs[index] as HTMLInputElement).value = (input as HTMLInputElement).value;
+                }
+            });
+
+            printWindow.document.body.appendChild(clonedNode);
+            
+            setTimeout(() => {
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }, 1500); 
+        }
     };
 
     const handleUploadClick = () => {
@@ -154,8 +226,7 @@ const CandidateComparison: React.FC<CandidateComparisonProps> = ({
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={handlePrint}
-                                        disabled={positionFilter === 'All'}
-                                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-semibold text-sm flex items-center disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 font-semibold text-sm flex items-center"
                                     >
                                         <PrinterIcon className="w-4 h-4 mr-2" />
                                         Print
