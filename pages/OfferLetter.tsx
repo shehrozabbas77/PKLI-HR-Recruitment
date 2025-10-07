@@ -63,16 +63,16 @@ const OfferLetter: React.FC<OfferLetterProps> = ({ candidates, setCandidates }) 
   }, [allRelevantCandidates, departmentFilter]);
   const positions = useMemo(() => ['All', ...new Set(allRelevantCandidates.map(c => c.positionAppliedFor))], [allRelevantCandidates]);
 
-  const applyFilters = (candidateList: Candidate[]) => {
-    return candidateList.filter(c => 
+  const filteredCandidates = useMemo(() => {
+    return allRelevantCandidates.filter(c => 
         (departmentFilter === 'All' || c.department === departmentFilter) &&
         (sectionFilter === 'All' || c.section === sectionFilter) &&
         (positionFilter === 'All' || c.positionAppliedFor === positionFilter)
     );
-  };
+  }, [allRelevantCandidates, departmentFilter, sectionFilter, positionFilter]);
 
-  const candidatesToOffer = applyFilters(candidates.filter(c => c.status === 'Approved for Hire'));
-  const offersSent = applyFilters(candidates.filter(c => c.status === 'Offer Sent'));
+  const candidatesToOffer = useMemo(() => filteredCandidates.filter(c => c.status === 'Approved for Hire'), [filteredCandidates]);
+  const offersSent = useMemo(() => filteredCandidates.filter(c => c.status === 'Offer Sent'), [filteredCandidates]);
 
 
   const handleStatusChange = (id: number, status: 'Offer Sent' | 'Offer Accepted') => {

@@ -110,6 +110,13 @@ const PrintableFormLayout: React.FC<{ candidate: Candidate | null }> = ({ candid
 };
 
 
+const DetailItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div>
+        <p className="text-sm font-medium text-gray-500">{label}</p>
+        <p className="text-base font-semibold text-gray-800">{value}</p>
+    </div>
+);
+
 // Component for the interactive on-screen form
 const InteractiveScreeningForm: React.FC<{ 
     candidate: Candidate; 
@@ -129,13 +136,6 @@ const InteractiveScreeningForm: React.FC<{
         setTempId(`PKLI-MED-${new Date().getFullYear()}-${String(candidate.id).padStart(4, '0')}`);
         setScreeningInitiated(true);
     };
-
-    const DetailItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-        <div>
-            <p className="text-sm font-medium text-gray-500">{label}</p>
-            <p className="text-base font-semibold text-gray-800">{value}</p>
-        </div>
-    );
 
     return (
         <Card>
