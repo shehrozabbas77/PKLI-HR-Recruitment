@@ -1,4 +1,3 @@
-
 import type { Step, StaffingPosition, Requisition, Candidate, PanelMember, SelectionBoard, JobDescription, JobAdvertisement } from './types';
 import { PositionStatus } from './types';
 
@@ -31,7 +30,8 @@ export const NAVIGATION_STRUCTURE: Step[] = [
     children: [
         { id: 9, title: 'Panel Nomination', shortTitle: 'Panel Nomination', description: 'Nominate interview panels for shortlisted candidates.' },
         { id: 10, title: 'Interview Scheduling & Communication', shortTitle: 'Interview Scheduling', description: 'Schedule interviews, send invites, and manage pre-interview forms for candidates with nominated panels.' },
-        { id: 11, title: 'Interview Evaluation', shortTitle: 'Interview Evaluation', description: 'Record evaluation scores and comments from the interview panel.' },
+        { id: 11, title: 'Candidate Attendance & Verification', shortTitle: 'Attendance', description: 'Mark attendance and verify documents for candidates on the interview day.' },
+        { id: 12, title: 'Interview Evaluation', shortTitle: 'Interview Evaluation', description: 'Record evaluation scores and comments from the interview panel.' },
     ]
   },
   {
@@ -40,25 +40,25 @@ export const NAVIGATION_STRUCTURE: Step[] = [
     shortTitle: 'Comparative of Interviews',
     description: 'Compare candidates and finalize hiring.',
     children: [
-        { id: 12, title: 'Comparative Sheet', shortTitle: 'Comparative Sheet', description: 'Compare candidates based on interview evaluations to make a hiring decision.' },
-        { id: 13, title: 'Salary Approval & Finalization', shortTitle: 'Salary Approval & Finalization', description: 'Calculate salary and process the final hiring approvals.' }
+        { id: 13, title: 'Comparative Sheet', shortTitle: 'Comparative Sheet', description: 'Compare candidates based on interview evaluations to make a hiring decision.' },
+        { id: 14, title: 'Salary Approval & Finalization', shortTitle: 'Salary Approval & Finalization', description: 'Calculate salary and process the final hiring approvals.' }
     ]
   },
    { 
     id: 500, title: 'Hiring', shortTitle: 'Hiring', description: '',
     children: [
-        { id: 14, title: 'Offer Letter', shortTitle: 'Offer', description: 'Generate and send official offer letters to selected candidates.' },
+        { id: 15, title: 'Offer Letter', shortTitle: 'Offer', description: 'Generate and send official offer letters to selected candidates.' },
     ]
   },
   { 
     id: 600, title: 'Onboarding', shortTitle: 'Onboarding', description: '',
     children: [
-        { id: 15, title: 'Pre-Employment Screening', shortTitle: 'Medical Screening', description: 'Manage medical screening and fitness alerts for new hires.' },
-        { id: 16, title: 'HR Verifications', shortTitle: 'HR Verifications', description: 'Track verification of documents, experience, and references.' },
-        { id: 17, title: 'Post-Onboarding Alerts', shortTitle: 'Onboarding', description: 'Monitor and receive alerts for license and document expiry.' },
+        { id: 16, title: 'Pre-Employment Screening', shortTitle: 'Medical Screening', description: 'Manage medical screening and fitness alerts for new hires.' },
+        { id: 17, title: 'HR Verifications', shortTitle: 'HR Verifications', description: 'Track verification of documents, experience, and references.' },
+        { id: 18, title: 'Post-Onboarding Alerts', shortTitle: 'Onboarding', description: 'Monitor and receive alerts for license and document expiry.' },
     ]
   },
-  { id: 18, title: 'My Nominations', shortTitle: 'My Nominations', description: 'View and respond to interview nominations, and conduct evaluations.' },
+  { id: 19, title: 'My Nominations', shortTitle: 'My Nominations', description: 'View and respond to interview nominations, and conduct evaluations.' },
 ];
 
 export const ALL_STEPS: Step[] = NAVIGATION_STRUCTURE.flatMap(step => step.children ? [step, ...step.children] : [step]);
@@ -515,6 +515,123 @@ export const mockRequisitions: Requisition[] = [
         hodName: 'Nursing Director',
         hodUID: 'UID500',
     },
+    {
+        id: 8,
+        reqId: 'REQ-008',
+        position: 'Admin Officer',
+        department: 'Administration',
+        section: 'General Administration',
+        type: 'Replacement',
+        qualification: 'Bachelors in Business Administration',
+        experience: '2 years',
+        requiredSkills: 'MS Office, Communication Skills',
+        licenseRequirement: 'No',
+        numberOfPositions: 1,
+        status: 'Pending HOD Approval',
+        requestedBy: 'Mr. Kamran',
+        requestedDate: '2025-11-25 12:00',
+        approvalHistory: [
+            { role: 'HOD', status: 'Pending' }
+        ],
+        justification: 'Replacement for an employee who has been transferred to another department.',
+        fiscalYear: '2025-2026',
+        positionType: 'Full-Time',
+        budgetedStatus: 'Budgeted',
+        replacementFor: 'Ms. Sana (Transferred)',
+        supervisorName: 'Admin Manager',
+        supervisorUID: 'UID601',
+        hodName: 'Admin Director',
+        hodUID: 'UID600',
+    },
+    {
+        id: 9,
+        reqId: 'REQ-009',
+        position: 'Charge Nurse',
+        department: 'Medical Services',
+        section: 'Nursing',
+        type: 'Replacement',
+        qualification: 'BScN or Diploma',
+        experience: '3+ years',
+        requiredSkills: 'Patient care, Ward management',
+        licenseRequirement: 'Yes',
+        numberOfPositions: 2,
+        status: 'Approved',
+        requestedBy: 'Nursing Director',
+        requestedDate: '2025-11-10 11:00',
+        approvalHistory: [
+            { role: 'HOD', status: 'Approved', date: '2025-11-10', approver: 'Nursing Director' },
+            { role: 'Director/Dean', status: 'Approved', date: '2025-11-11', approver: 'Medical Director' },
+            { role: 'HR Review', status: 'Reviewed', date: '2025-11-12', approver: 'HR Team' }
+        ],
+        completionDate: '2025-11-12',
+        justification: 'Filling two vacant positions for Charge Nurse to ensure proper shift coverage.',
+        fiscalYear: '2025-2026',
+        positionType: 'Full-Time',
+        budgetedStatus: 'Budgeted',
+        replacementFor: 'Multiple staff',
+        supervisorName: 'Head Nurse',
+        supervisorUID: 'UID501',
+        hodName: 'Nursing Director',
+        hodUID: 'UID500',
+    },
+    {
+        id: 10,
+        reqId: 'REQ-010',
+        position: 'Network Technician',
+        department: 'ICT',
+        section: 'Infrastructure',
+        type: 'New Position',
+        qualification: 'DAE in Electronics/IT',
+        experience: '1 year',
+        requiredSkills: 'Networking, Hardware Troubleshooting',
+        licenseRequirement: 'No',
+        numberOfPositions: 1,
+        status: 'Pending HR Review',
+        requestedBy: 'Kahfif Siddiqui',
+        requestedDate: '2025-10-28 16:00',
+        approvalHistory: [
+            { role: 'HOD', status: 'Approved', date: '2025-10-29', approver: 'Mr. Ali' },
+            { role: 'Director/Dean', status: 'Approved', date: '2025-10-30', approver: 'Dr. Khan' },
+            { role: 'HR Review', status: 'Pending' }
+        ],
+        justification: 'New position required to support the expanding network infrastructure and reduce downtime.',
+        fiscalYear: '2025-2026',
+        positionType: 'Full-Time',
+        budgetedStatus: 'Budgeted',
+        supervisorName: 'Network Administrator',
+        supervisorUID: 'UID007',
+        hodName: 'Mr. Ali',
+        hodUID: 'UID001',
+    },
+    {
+        id: 11,
+        reqId: 'REQ-011',
+        position: 'Accountant',
+        department: 'Finance',
+        section: 'Accounts',
+        type: 'Replacement',
+        qualification: 'B.Com / M.Com',
+        experience: '2 years',
+        requiredSkills: 'Bookkeeping, Tax filing',
+        licenseRequirement: 'No',
+        numberOfPositions: 1,
+        status: 'Needs Revision',
+        requestedBy: 'Mr. Ahmed',
+        requestedDate: '2025-11-15 09:30',
+        approvalHistory: [
+            { role: 'HOD', status: 'Approved', date: '2025-11-15', approver: 'Mr. Ahmed' },
+            { role: 'Director/Dean', status: 'Rejected', date: '2025-11-16', approver: 'Dr. Khan', comments: 'Justification is not strong enough. Please provide more details on workload.' }
+        ],
+        justification: 'Replacement for a resigned employee.',
+        fiscalYear: '2025-2026',
+        positionType: 'Full-Time',
+        budgetedStatus: 'Budgeted',
+        replacementFor: 'Mr. Asif (Resigned)',
+        supervisorName: 'Finance Manager',
+        supervisorUID: 'UID202',
+        hodName: 'Mr. Ahmed',
+        hodUID: 'UID200',
+    }
 ];
 
 export const mockAdvertisements: JobAdvertisement[] = [
@@ -781,8 +898,8 @@ export const mockCandidates: Candidate[] = [
     { id: 22, name: 'Mehwish Hayat', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35202-3233445-2', qualification: 'BSCS', experienceYears: 4, organization: 'Game Studio', contact: '0321-3233445', city: 'Lahore', remarks: 'Candidate shortlisted. Needs panel.', status: 'Shortlisted for Interview', panelNominationStatus: 'Pending Nomination', interviewPanel: [], shortlistingRemarks: 'Strong technical skills in required stack. Fee verified.', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-20' },
     
     // Status: Shortlisted for Interview (Panel Nominated)
-    { id: 23, name: 'Humayun Saeed', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-4344556-3', qualification: 'MS Management', experienceYears: 11, organization: 'IT Services Co.', contact: '0313-4344556', city: 'Islamabad', remarks: 'Panel nominated. Ready for scheduling.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: true, preInterviewFormSubmitted: false, adReference: 'AD-1', appliedDate: '2025-10-22' },
-    { id: 24, name: 'Sohail Ahmed', positionAppliedFor: 'Registrar', department: 'Medical Services', section: 'Internal Medicine', cnic: '35202-5455667-4', qualification: 'FCPS', experienceYears: 6, organization: 'Shaukat Khanum', contact: '0322-5455667', city: 'Lahore', remarks: 'Medical board assigned. Scheduling in progress.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Chairman of Department', role: 'Member', status: 'Pending', notified: false }], interviewTime: '2025-11-28T10:00', interviewStatus: 'Scheduled', preInterviewFormSent: true, preInterviewFormSubmitted: true, preInterviewFormData: { '1st Prof Marks': '650 / 800', '2nd Prof Marks': '680 / 800', '3rd Prof Marks': '710 / 800', '4th Prof Marks': '700 / 800', '5th Prof Marks': '720 / 800', '1st Prof Attempts': 1, '2nd Prof Attempts': 1, '3rd Prof Attempts': 1, '4th Prof Attempts': 2, '5th Prof Attempts': 1, 'IMM Exam': 'Yes', 'IMM Exam Date': '2024-03-15', 'Graduating Institute': 'King Edward Medical University', 'House Job Hospital': 'Mayo Hospital, Lahore', 'Is Govt Teaching Institute': 'Yes', 'Is attached to Graduating Institute': 'Yes', 'University Positions': ['1. Gold Medal in Physiology'], 'Research Papers': ['1. "Effects of... " - Journal of Medicine, 2023'], }, adReference: 'AD-2', appliedDate: '2025-11-08' },
+    { id: 23, name: 'Humayun Saeed', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-4344556-3', qualification: 'MS Management', experienceYears: 11, organization: 'IT Services Co.', contact: '0313-4344556', city: 'Islamabad', remarks: 'Panel nominated. Ready for scheduling.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: true, preInterviewFormSubmitted: false, adReference: 'AD-1', appliedDate: '2025-10-22', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 24, name: 'Sohail Ahmed', positionAppliedFor: 'Registrar', department: 'Medical Services', section: 'Internal Medicine', cnic: '35202-5455667-4', qualification: 'FCPS', experienceYears: 6, organization: 'Shaukat Khanum', contact: '0322-5455667', city: 'Lahore', remarks: 'Medical board assigned. Scheduling in progress.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Chairman of Department', role: 'Member', status: 'Pending', notified: false }], interviewTime: '2025-11-28T10:00', interviewStatus: 'Scheduled', preInterviewFormSent: true, preInterviewFormSubmitted: true, preInterviewFormData: { '1st Prof Marks': '650 / 800', '2nd Prof Marks': '680 / 800', '3rd Prof Marks': '710 / 800', '4th Prof Marks': '700 / 800', '5th Prof Marks': '720 / 800', '1st Prof Attempts': 1, '2nd Prof Attempts': 1, '3rd Prof Attempts': 1, '4th Prof Attempts': 2, '5th Prof Attempts': 1, 'IMM Exam': 'Yes', 'IMM Exam Date': '2024-03-15', 'Graduating Institute': 'King Edward Medical University', 'House Job Hospital': 'Mayo Hospital, Lahore', 'Is Govt Teaching Institute': 'Yes', 'Is attached to Graduating Institute': 'Yes', 'University Positions': ['1. Gold Medal in Physiology'], 'Research Papers': ['1. "Effects of... " - Journal of Medicine, 2023'], }, adReference: 'AD-2', appliedDate: '2025-11-08', attendanceStatus: 'Pending', documentChecklist: {} },
     // FIX: Changed comments from string to object to align with new PanelEvaluation type.
     { id: 25, name: 'Bushra Ansari', positionAppliedFor: 'HR Manager', department: 'Human Resource', section: 'Operations', cnic: '35202-6566778-5', qualification: 'MBA HR', experienceYears: 7, organization: 'University', contact: '0300-6566778', city: 'Lahore', remarks: 'Panel is set.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'HOD of Concerned Department', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', evaluation: [{ panelMemberName: 'Hospital Director / Representative', scores: { 'Leadership': 9, 'HR Knowledge': 8, 'Communication': 9 }, comments: { 'General': 'Very strong candidate.'}}, { panelMemberName: 'HOD of Concerned Department', scores: { 'Leadership': 8, 'HR Knowledge': 9, 'Communication': 8 }, comments: { 'General': 'Excellent fit for the role.'}}], preInterviewFormSent: false, currentSalary: 250000, expectedSalary: 300000, adReference: 'AD-1', appliedDate: '2025-10-28' },
 
@@ -801,7 +918,7 @@ export const mockCandidates: Candidate[] = [
     { id: 33, name: 'Dr. Amna Khan', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35201-1111111-1', qualification: 'MBBS', experienceYears: 2, organization: 'City Hospital', contact: '0301-1234567', city: 'Lahore', remarks: 'Ready for scheduling', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Pending', notified: false }], interviewStatus: 'Pending Schedule', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-10' },
     { id: 34, name: 'Dr. Bilal Ahmed', positionAppliedFor: 'Registrar', department: 'Medical Services', section: 'Internal Medicine', cnic: '35201-2222222-2', qualification: 'MBBS, FCPS Part 1', experienceYears: 4, organization: 'National Hospital', contact: '0302-2345678', city: 'Lahore', remarks: 'Panel set, ready for interview.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Chairman of Department', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-11' },
     { id: 35, name: 'Dr. Sana Javed', positionAppliedFor: 'Senior Registrar', department: 'Medical Services', section: 'Pediatrics', cnic: '35201-3333333-3', qualification: 'MBBS, FCPS', experienceYears: 6, organization: 'Children Hospital', contact: '0303-3456789', city: 'Lahore', remarks: 'Awaiting schedule confirmation.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Pending', notified: false }], interviewStatus: 'Pending Schedule', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-12' },
-    { id: 36, name: 'Dr. Omar Farooq', positionAppliedFor: 'Clinical Fellow', department: 'Medical Services', section: 'Hepatology', cnic: '35201-4444444-4', qualification: 'MBBS, FCPS', experienceYears: 5, organization: 'PKLI & RC', contact: '0304-4567890', city: 'Lahore', remarks: 'Internal candidate.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-02T11:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-13' },
+    { id: 36, name: 'Dr. Omar Farooq', positionAppliedFor: 'Clinical Fellow', department: 'Medical Services', section: 'Hepatology', cnic: '35201-4444444-4', qualification: 'MBBS, FCPS', experienceYears: 5, organization: 'PKLI & RC', contact: '0304-4567890', city: 'Lahore', remarks: 'Internal candidate.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-02T11:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-13', attendanceStatus: 'Pending', documentChecklist: {} },
     { id: 37, name: 'Dr. Hina Riaz', positionAppliedFor: 'Post Graduate Resident', department: 'Medical Services', section: 'General Medicine', cnic: '35201-5555555-5', qualification: 'MBBS', experienceYears: 1, organization: 'House Job Completed', contact: '0305-5678901', city: 'Lahore', remarks: 'Fresh candidate for residency.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-14' },
     // FIX: Corrected the malformed final candidate object which was causing a type error.
     { id: 38, name: 'Dr. Kashif Mehmood', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'Emergency', cnic: '35201-6666666-6', qualification: 'MBBS', experienceYears: 3, organization: 'Services Hospital', contact: '0306-6667788', city: 'Lahore', remarks: 'Experienced in emergency medicine.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Pending', notified: false }], interviewStatus: 'Pending Schedule', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-15' },
@@ -811,10 +928,10 @@ export const mockCandidates: Candidate[] = [
     { id: 41, name: 'Asif Raza', positionAppliedFor: 'Admin Officer', department: 'Administration', section: 'General Administration', cnic: '35201-9999999-9', qualification: 'MPA', experienceYears: 5, organization: 'Govt. Sector', contact: '0309-9990011', city: 'Lahore', remarks: 'Solid administrative background.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Director HR', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, currentSalary: 120000, expectedSalary: 150000, evaluation: [{ panelMemberName: 'Hospital Director', scores: { 'qualification': 4, 'work_experience': 5, 'technical_knowledge': 4, 'communication': 5, 'personality': 4 }, comments: {}},{ panelMemberName: 'Director HR', scores: { 'qualification': 5, 'work_experience': 4, 'technical_knowledge': 4, 'communication': 4, 'personality': 5 }, comments: {}}], adReference: 'AD-4', appliedDate: '2025-03-12' },
     
     // --- Additional candidates for "My Nominations" ---
-    { id: 42, name: 'Bilal Ashraf', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-1231231-1', qualification: 'MBA', experienceYears: 10, organization: 'Tech Innovations', contact: '0301-1231231', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-23' },
-    { id: 43, name: 'Imran Abbas Naqvi', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-2342342-2', qualification: 'MS Project Management', experienceYears: 13, organization: 'Global Solutions', contact: '0302-2342342', city: 'Karachi', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-24' },
-    { id: 44, name: 'Feroze Khan', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-3453453-3', qualification: 'MBBS', experienceYears: 4, organization: 'Lahore General Hospital', contact: '0303-3453453', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-16' },
-    { id: 45, name: 'Danish Taimoor', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-4564564-4', qualification: 'MBBS', experienceYears: 2, organization: 'Jinnah Hospital', contact: '0304-4564564', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-17' },
+    { id: 42, name: 'Bilal Ashraf', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-1231231-1', qualification: 'MBA', experienceYears: 10, organization: 'Tech Innovations', contact: '0301-1231231', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-23', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 43, name: 'Imran Abbas Naqvi', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-2342342-2', qualification: 'MS Project Management', experienceYears: 13, organization: 'Global Solutions', contact: '0302-2342342', city: 'Karachi', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-24', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 44, name: 'Feroze Khan', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-3453453-3', qualification: 'MBBS', experienceYears: 4, organization: 'Lahore General Hospital', contact: '0303-3453453', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-16', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 45, name: 'Danish Taimoor', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-4564564-4', qualification: 'MBBS', experienceYears: 2, organization: 'Jinnah Hospital', contact: '0304-4564564', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-17', attendanceStatus: 'Pending', documentChecklist: {} },
 
     // --- Candidates for Candidate Comparison Screen ---
     {
@@ -907,5 +1024,30 @@ export const mockCandidates: Candidate[] = [
     { id: 204, name: 'Hamza Abbasi', positionAppliedFor: 'Accountant', department: 'Finance', section: 'Accounts', cnic: '35201-4445556-4', qualification: 'B.Com', experienceYears: 3.5, organization: 'Local Retailer', contact: '0344-1122334', city: 'Lahore', remarks: 'Approved by hiring manager.', status: 'Approved for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], finalSalary: 95000 },
     { id: 205, name: 'Maya Ali', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-5556667-5', qualification: 'Diploma in Nursing', experienceYears: 4, organization: 'Fatima Memorial', contact: '0315-2233445', city: 'Lahore', remarks: 'Offer letter sent.', status: 'Offer Sent', panelNominationStatus: 'Panel Nominated', interviewPanel: [], finalSalary: 105000 },
     // FIX: Completed the malformed final candidate object which was causing a syntax and type error.
-    { id: 206, name: 'Osman Khalid Butt', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-6667778-6', qualification: 'BScN', experienceYears: 2, organization: 'Shalamar Hospital', contact: '0300-6667788', city: 'Lahore', remarks: 'Medically fit, verification pending.', status: 'Pending Verification', panelNominationStatus: 'Panel Nominated', interviewPanel: [] }
+    { id: 206, name: 'Osman Khalid Butt', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-6667778-6', qualification: 'BScN', experienceYears: 2, organization: 'Shalamar Hospital', contact: '0300-6667788', city: 'Lahore', remarks: 'Medically fit, verification pending.', status: 'Pending Verification', panelNominationStatus: 'Panel Nominated', interviewPanel: [] },
+    // New candidates for Attendance Page
+    { 
+        id: 50, name: 'Amina Sheikh', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35201-1111111-9', qualification: 'MBBS', experienceYears: 2, organization: 'Lahore General Hospital', contact: '0300-1111119', city: 'Lahore', remarks: 'Scheduled for interview.', 
+        status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director', role: 'Chairperson', status: 'Available', notified: true }],
+        interviewStatus: 'Scheduled', interviewTime: `${new Date().toISOString().split('T')[0]}T10:00`,
+        attendanceStatus: 'Pending', documentChecklist: {}
+    },
+    { 
+        id: 51, name: 'Fahad Mustafa', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35201-2222222-9', qualification: 'BSCS', experienceYears: 3, organization: 'NetSol', contact: '0300-2222229', city: 'Lahore', remarks: 'Scheduled for interview.', 
+        status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Available', notified: true }],
+        interviewStatus: 'Scheduled', interviewTime: `${new Date().toISOString().split('T')[0]}T11:30`,
+        attendanceStatus: 'Pending', documentChecklist: {}
+    },
+    { 
+        id: 52, name: 'Sajal Aly', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-3333333-9', qualification: 'BScN', experienceYears: 4, organization: 'Shalamar Hospital', contact: '0300-3333339', city: 'Lahore', remarks: 'Scheduled for interview.', 
+        status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Nursing Director', role: 'Chairperson', status: 'Available', notified: true }],
+        interviewStatus: 'Scheduled', interviewTime: `${new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}T09:00`,
+        attendanceStatus: 'Pending', documentChecklist: {}
+    },
+    { 
+        id: 53, name: 'Ahsan Khan', positionAppliedFor: 'Admin Officer', department: 'Administration', section: 'General Administration', cnic: '35201-4444444-9', qualification: 'BBA', experienceYears: 5, organization: 'Packages Mall', contact: '0300-4444449', city: 'Lahore', remarks: 'Scheduled for interview.', 
+        status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director', role: 'Chairperson', status: 'Available', notified: true }],
+        interviewStatus: 'Scheduled', interviewTime: `${new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]}T14:00`,
+        attendanceStatus: 'Present', documentChecklist: { 'Original CNIC': true, 'Updated CV / Resume (x2)': true }
+    }
 ];

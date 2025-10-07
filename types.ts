@@ -150,6 +150,8 @@ export interface Candidate {
     finalApprovalHistory?: ApprovalStep[];
     finalSalary?: number;
     salaryRemarks?: string;
+    attendanceStatus?: 'Pending' | 'Present' | 'Absent';
+    documentChecklist?: Record<string, boolean>;
 }
 
 export interface AdvertisedPositionInfo {

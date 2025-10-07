@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NAVIGATION_STRUCTURE, ALL_STEPS, SELECTION_BOARDS } from './constants';
 import Dashboard from './pages/Dashboard';
@@ -19,6 +20,7 @@ import type { Candidate, Requisition, StaffingPosition, JobAdvertisement as JobA
 import { mockCandidates, mockRequisitions, mockStaffingPlan, mockJobDescriptions, mockAdvertisements } from './constants';
 import Login from './pages/Login';
 import { Footer } from './components/Footer';
+import Attendance from './pages/Attendance';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -81,6 +83,11 @@ const App: React.FC = () => {
                     activeView="interview-scheduling"
                />;
       case 11:
+        return <Attendance 
+                  candidates={candidates.filter(c => c.interviewStatus === 'Scheduled' || !!c.attendanceStatus)} 
+                  setCandidates={setCandidates} 
+                />;
+      case 12:
         return <InterviewsPage
                     candidates={candidatesForInterview}
                     setCandidates={setCandidates} 
@@ -88,7 +95,7 @@ const App: React.FC = () => {
                     setSelectionBoards={setSelectionBoards}
                     activeView="evaluation"
                />;
-      case 12:
+      case 13:
         return <InterviewsPage
                     candidates={candidatesForInterview}
                     setCandidates={setCandidates} 
@@ -98,17 +105,17 @@ const App: React.FC = () => {
                     advertisements={advertisements}
                     requisitions={requisitions}
                 />;
-      case 13:
-        return <ApprovalForHire candidates={candidates.filter(c => c.status === 'Recommended for Hire')} setCandidates={setCandidates} />;
       case 14:
-        return <OfferLetter candidates={candidates.filter(c => c.status === 'Approved for Hire' || c.status === 'Offer Sent')} setCandidates={setCandidates} />;
+        return <ApprovalForHire candidates={candidates.filter(c => c.status === 'Recommended for Hire')} setCandidates={setCandidates} />;
       case 15:
-        return <MedicalScreening candidates={candidates.filter(c => c.status === 'Offer Accepted' || c.status === 'Offer Sent')} setCandidates={setCandidates} />;
+        return <OfferLetter candidates={candidates.filter(c => c.status === 'Approved for Hire' || c.status === 'Offer Sent')} setCandidates={setCandidates} />;
       case 16:
-        return <Verification candidates={candidates.filter(c => c.status === 'Pending Verification')} setCandidates={setCandidates} />;
+        return <MedicalScreening candidates={candidates.filter(c => c.status === 'Offer Accepted' || c.status === 'Offer Sent')} setCandidates={setCandidates} />;
       case 17:
-        return <PostOnboarding candidates={candidates.filter(c => c.status === 'Hired')} />;
+        return <Verification candidates={candidates.filter(c => c.status === 'Pending Verification')} setCandidates={setCandidates} />;
       case 18:
+        return <PostOnboarding candidates={candidates.filter(c => c.status === 'Hired')} />;
+      case 19:
         return <NominationPortal candidates={candidates} setCandidates={setCandidates} />;
       default:
         return <Dashboard 

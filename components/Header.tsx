@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import type { Step } from '../types';
 
@@ -81,8 +82,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeStep, setActiveStep, steps }) => {
-    const mainNavSteps = steps.filter(s => s.id !== 18); // Exclude "My Nominations" from main nav
-    const myNominationsStep = steps.find(s => s.id === 18);
+    const mainNavSteps = steps.filter(s => s.id !== 19); // Exclude "My Nominations" from main nav
+    const myNominationsStep = steps.find(s => s.id === 19);
 
     return (
         <header className="bg-[#8C3A3F] flex items-center justify-between px-6 py-2 text-white shadow-lg relative z-10 print-hidden">
