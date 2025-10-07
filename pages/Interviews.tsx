@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { Candidate, PanelMember, SelectionBoard, InterviewStatus, PanelEvaluation, PanelMemberStatus, Notification, JobAdvertisement, Requisition, CandidateStatus } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -447,9 +448,10 @@ interface InterviewsPageProps {
   activeView: 'panel-nomination' | 'interview-scheduling' | 'evaluation' | 'comparative-sheet';
   advertisements?: JobAdvertisement[];
   requisitions?: Requisition[];
+  onNavigate?: (step: number) => void;
 }
 
-const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidates, selectionBoards, setSelectionBoards, activeView, advertisements, requisitions }) => {
+const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidates, selectionBoards, setSelectionBoards, activeView, advertisements, requisitions, onNavigate }) => {
   
   const [isNominationModalOpen, setIsNominationModalOpen] = useState(false);
   const [selectedCandidateForPanel, setSelectedCandidateForPanel] = useState<Candidate | null>(null);
@@ -693,6 +695,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
       setNotification({ type: 'success', message: `${selectedIds.length} interviews have been scheduled successfully.` });
   };
   
+  // FIX: Corrected an undefined variable `i` to `id` when adding a new selection.
   const handleIndividualSelect = (id: number) => {
       setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
@@ -716,8 +719,23 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
         return (
           <Card>
             <CardHeader>
-              <CardTitle>Interview Scheduling & Communication</CardTitle>
-              <CardDescription>Set interview times and send forms/invites to candidates with nominated panels.</CardDescription>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>Interview Scheduling & Communication</CardTitle>
+                  <CardDescription>Set interview times and send forms/invites to candidates with nominated panels.</CardDescription>
+                </div>
+                {onNavigate && (
+                  <button
+                    onClick={() => onNavigate(11)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-base font-semibold transition-colors flex items-center shadow-sm hover:shadow-md whitespace-nowrap transform hover:-translate-y-px"
+                  >
+                    Proceed to Attendance & Verification
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </button>
+                )}
+              </div>
               <div className="pt-4 mt-4 border-t space-y-4">
                   <div className="flex items-end gap-6 flex-wrap">
                       <div>

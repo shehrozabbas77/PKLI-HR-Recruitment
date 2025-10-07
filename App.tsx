@@ -81,6 +81,7 @@ const App: React.FC = () => {
                     selectionBoards={selectionBoards}
                     setSelectionBoards={setSelectionBoards}
                     activeView="interview-scheduling"
+                    onNavigate={handleNavigate}
                />;
       case 11:
         return <Attendance 
