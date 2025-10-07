@@ -26,18 +26,22 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, o
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-4">
-        <div>
-          <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
-          <textarea
-            id="remarks"
-            rows={4}
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            placeholder={action === 'reject' ? "Please provide a reason for rejection." : action === 'return' ? "Please provide comments for returning." : "Optional comments..."}
-            required={action === 'reject' || action === 'return'}
-          />
-        </div>
+        {action !== 'approve' ? (
+          <div>
+            <label htmlFor="remarks" className="block text-sm font-medium text-gray-700">Remarks</label>
+            <textarea
+              id="remarks"
+              rows={4}
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              className="mt-1 block w-full shadow-sm text-base border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              placeholder={action === 'reject' ? "Please provide a reason for rejection." : "Please provide comments for returning."}
+              required={action === 'reject' || action === 'return'}
+            />
+          </div>
+        ) : (
+            <p className="text-base text-gray-600">Are you sure you want to approve this request?</p>
+        )}
         <div>
           <label className="block text-sm font-medium text-gray-700">Date</label>
           <p className="mt-1 text-base text-gray-800 bg-gray-100 p-2 rounded-md">{today}</p>

@@ -50,7 +50,7 @@ const CandidateComparison: React.FC<CandidateComparisonProps> = ({
         if (sectionFilter !== 'All') {
             relevantCandidates = relevantCandidates.filter(c => c.section === sectionFilter);
         }
-        return ['All', ...Array.from(new Set(relevantCandidates.map(c => c.positionAppliedFor)))];
+        return ['All', ...Array.from(new Set(relevantCandidates.map(c => c.positionAppliedFor))).sort()];
     }, [evaluatedOrCompletedCandidates, departmentFilter, sectionFilter]);
     
     useEffect(() => { setSectionFilter('All'); }, [departmentFilter]);
@@ -536,6 +536,13 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
       })
   , [candidatesForEvaluation, jobTitleFilter, departmentFilter, sectionFilter, interviewStatusFilter]);
 
+  const groupedForNomination = useMemo(() => {
+    return filteredForNomination.reduce((acc, candidate) => {
+        (acc[candidate.positionAppliedFor] = acc[candidate.positionAppliedFor] || []).push(candidate);
+        return acc;
+    }, {} as Record<string, Candidate[]>);
+  }, [filteredForNomination]);
+
   
   // --- Event Handlers ---
 
@@ -849,14 +856,6 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
           </Card>
         );
       case 'panel-nomination':
-        // FIX: Cast the result of Object.entries to a specific tuple array type to ensure TypeScript can correctly infer the types of 'jobTitle' and 'groupCandidates', resolving errors related to 'map' and 'length' properties not existing on type 'unknown'.
-        const groupedForNomination = useMemo(() => {
-          return filteredForNomination.reduce((acc, candidate) => {
-              (acc[candidate.positionAppliedFor] = acc[candidate.positionAppliedFor] || []).push(candidate);
-              return acc;
-          }, {} as Record<string, Candidate[]>);
-        }, [filteredForNomination]);
-
         return (
           <Card>
             <CardHeader>

@@ -68,8 +68,8 @@ export const departmentSections: { [key: string]: string[] } = {
     'ICT': ['Management', 'Infrastructure', 'Software Development', 'Cybersecurity'],
     'Medical Services': ['Internal Medicine', 'General Medicine', 'Nursing', 'Pediatrics', 'Hepatology', 'Emergency', 'Nephrology'],
     'Administration': ['General Administration', 'Housekeeping', 'Patient Relations'],
-    'Finance': ['Accounts'],
-    'Human Resource': ['Operations']
+    'Finance': ['Accounts', 'Audit', 'Procurement'],
+    'Human Resource': ['Operations', 'Talent Acquisition', 'Compensation & Benefits']
 };
 
 export const mockStaffingPlan: StaffingPosition[] = [
@@ -90,6 +90,7 @@ export const mockStaffingPlan: StaffingPosition[] = [
     { id: 14, department: 'Medical Services', section: 'General Medicine', designation: 'Medical Officer', minSalary: 150000, maxSalary: 250000, weightedAvgSalary: 175000, positions2526: 25, onBoard: 20, vacant: 5, positions2627: 25, remarks: '5 vacancies due to turnover', status: PositionStatus.Normal },
     { id: 15, department: 'Medical Services', section: 'Nursing', designation: 'Head Nurse', minSalary: 180000, maxSalary: 280000, weightedAvgSalary: 205000, positions2526: 5, onBoard: 4, vacant: 0, positions2627: 5, remarks: '1 resignation', status: PositionStatus.Resigned, date: '2024-09-01' },
     { id: 16, department: 'Medical Services', section: 'Nursing', designation: 'Charge Nurse', minSalary: 120000, maxSalary: 180000, weightedAvgSalary: 135000, positions2526: 30, onBoard: 28, vacant: 2, positions2627: 30, remarks: '2 positions open', status: PositionStatus.Normal },
+    { id: 23, department: 'Medical Services', section: 'Nursing', designation: 'Staff Nurse', minSalary: 80000, maxSalary: 120000, weightedAvgSalary: 90000, positions2526: 100, onBoard: 90, vacant: 10, positions2627: 110, remarks: 'High turnover position, continuous hiring.', status: PositionStatus.Normal },
     
     // Administration Department
     { id: 17, department: 'Administration', section: 'General Administration', designation: 'Admin Director', minSalary: 300000, maxSalary: 450000, weightedAvgSalary: 337500, positions2526: 1, onBoard: 1, vacant: 0, positions2627: 1, remarks: 'Filled', status: PositionStatus.Normal },
@@ -99,7 +100,11 @@ export const mockStaffingPlan: StaffingPosition[] = [
     // Finance Department
     { id: 20, department: 'Finance', section: 'Accounts', designation: 'Chief Financial Officer', minSalary: 400000, maxSalary: 600000, weightedAvgSalary: 450000, positions2526: 1, onBoard: 1, vacant: 0, positions2627: 1, remarks: 'Filled', status: PositionStatus.Normal },
     { id: 21, department: 'Finance', section: 'Accounts', designation: 'Finance Manager', minSalary: 200000, maxSalary: 300000, weightedAvgSalary: 225000, positions2526: 2, onBoard: 1, vacant: 1, positions2627: 2, remarks: 'Hiring for one manager', status: PositionStatus.Normal },
-    { id: 22, department: 'Finance', section: 'Accounts', designation: 'Accountant', minSalary: 80000, maxSalary: 120000, weightedAvgSalary: 90000, positions2526: 5, onBoard: 5, vacant: 0, positions2627: 5, remarks: 'Fully staffed', status: PositionStatus.Normal },
+    { id: 22, department: 'Finance', section: 'Accounts', designation: 'Accountant', minSalary: 80000, maxSalary: 120000, weightedAvgSalary: 90000, positions2526: 5, onBoard: 4, vacant: 1, positions2627: 5, remarks: '1 vacancy due to promotion', status: PositionStatus.Normal },
+
+    // Human Resource Department
+    { id: 24, department: 'Human Resource', section: 'Operations', designation: 'Director HR', minSalary: 350000, maxSalary: 500000, weightedAvgSalary: 387500, positions2526: 1, onBoard: 1, vacant: 0, positions2627: 1, remarks: 'Filled', status: PositionStatus.Normal },
+    { id: 25, department: 'Human Resource', section: 'Talent Acquisition', designation: 'HR Officer', minSalary: 70000, maxSalary: 110000, weightedAvgSalary: 80000, positions2526: 3, onBoard: 2, vacant: 1, positions2627: 3, remarks: 'Need one more officer for recruitment.', status: PositionStatus.Normal },
 ];
 
 export const mockJobDescriptions: JobDescription[] = [
@@ -275,6 +280,28 @@ export const mockJobDescriptions: JobDescription[] = [
       { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Director HR', date: '2025-08-19' },
       { role: 'Approved By (HOD)', status: 'Approved', approver: 'Director HR', date: '2025-08-19' },
       { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-08-20' }
+    ]
+  },
+  {
+    id: 11,
+    designation: 'Staff Nurse',
+    department: 'Medical Services',
+    section: 'Nursing',
+    reportsTo: 'Charge Nurse',
+    reportingPositions: 'None',
+    qualification: ['BScN', 'Diploma in General Nursing'],
+    skills: 'Patient care, medication administration, IV cannulation, vital signs monitoring.',
+    experience: '1+ year of clinical experience.',
+    registrationLicense: ['PNC'],
+    jobSummary: 'Provide direct patient care, administer medications, and collaborate with the healthcare team to ensure optimal patient outcomes.',
+    jobFunctions: ['Assess patient health problems and needs.', 'Develop and implement nursing care plans.', 'Maintain medical records.'],
+    status: 'Approved',
+    preparedBy: 'Nursing Director',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Nursing Director', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Nursing Director', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
 ];
@@ -457,6 +484,37 @@ export const mockRequisitions: Requisition[] = [
         hodName: 'Dr. Ahmad',
         hodUID: 'UID400',
     },
+    { 
+        id: 7, 
+        reqId: 'REQ-007',
+        position: 'Staff Nurse', 
+        department: 'Medical Services', 
+        section: 'Nursing', 
+        type: 'Replacement', 
+        qualification: 'BScN or Diploma', 
+        experience: '1+ year', 
+        requiredSkills: 'Patient care, IV cannulation', 
+        licenseRequirement: 'Yes', 
+        numberOfPositions: 5, 
+        status: 'Approved',
+        requestedBy: 'Nursing Director',
+        requestedDate: '2025-10-05 09:00',
+        approvalHistory: [
+            { role: 'HOD', status: 'Approved', date: '2025-10-05', approver: 'Nursing Director' },
+            { role: 'Director/Dean', status: 'Approved', date: '2025-10-06', approver: 'Medical Director' },
+            { role: 'HR Review', status: 'Reviewed', date: '2025-10-07', approver: 'HR Team' }
+        ],
+        completionDate: '2025-10-07',
+        justification: 'Bulk hiring to manage high turnover rate in nursing staff and maintain patient care standards.',
+        fiscalYear: '2025-2026',
+        positionType: 'Full-Time',
+        budgetedStatus: 'Budgeted',
+        replacementFor: 'Multiple staff',
+        supervisorName: 'Nursing Director',
+        supervisorUID: 'UID500',
+        hodName: 'Nursing Director',
+        hodUID: 'UID500',
+    },
 ];
 
 export const mockAdvertisements: JobAdvertisement[] = [
@@ -484,7 +542,7 @@ export const mockAdvertisements: JobAdvertisement[] = [
         section: 'Infrastructure',
       },
       {
-        reqId: 3,
+        reqId: 4,
         position: 'Software Engineer',
         qualification: 'BSCS',
         experience: '2 years in web development',
@@ -514,7 +572,7 @@ export const mockAdvertisements: JobAdvertisement[] = [
     status: 'Published',
     positions: [
       {
-        reqId: 4,
+        reqId: 105, // Mock reqId
         position: 'Medical Officer',
         qualification: 'MBBS or equivalent medical degree.',
         experience: 'Completed 1-year house job and holds a valid PMDC registration.',
@@ -524,13 +582,22 @@ export const mockAdvertisements: JobAdvertisement[] = [
       },
       {
         reqId: 6,
-        position: 'Consultant Physician',
+        position: 'Consultant Nephrology',
         qualification: 'FCPS in Internal Medicine or equivalent',
         experience: '3+ years post-fellowship experience',
         numberOfPositions: 2,
         department: 'Medical Services',
-        section: 'Internal Medicine',
+        section: 'Nephrology',
       },
+      {
+        reqId: 7,
+        position: 'Staff Nurse',
+        qualification: 'BScN or Diploma in Nursing',
+        experience: '1+ year experience',
+        numberOfPositions: 10,
+        department: 'Medical Services',
+        section: 'Nursing',
+      }
     ],
     applicationFeeDoctors: 3000,
     applicationFeeOthers: 1000,
@@ -580,10 +647,10 @@ export const mockAdvertisements: JobAdvertisement[] = [
         section: 'General Administration',
       },
       {
-        reqId: 103, // Mock reqId
-        position: 'Accountant',
-        qualification: 'B.Com / ACCA Part-qualified',
-        experience: '3 years of relevant experience',
+        reqId: 5,
+        position: 'Finance Manager',
+        qualification: 'ACCA/CMA/MBA Finance',
+        experience: '5+ years',
         numberOfPositions: 1,
         department: 'Finance',
         section: 'Accounts',
@@ -682,9 +749,9 @@ export const mockCandidates: Candidate[] = [
     // --- Stage 6: Application Data Collection ---
     // Status: New
     { id: 1, name: 'Ali Khan', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-1234567-1', qualification: 'MBBS', experienceYears: 2, organization: 'General Hospital', contact: '0300-1112233', city: 'Lahore', remarks: 'Meets basic criteria.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-02' },
-    { id: 2, name: 'Sana Javed', positionAppliedFor: 'Accountant', department: 'Finance', section: 'Accounts', cnic: '35202-2345678-2', qualification: 'B.Com', experienceYears: 3, organization: 'Audit Firm', contact: '0321-2223344', city: 'Lahore', remarks: 'Application just received.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-02-20' },
+    { id: 2, name: 'Sana Javed', positionAppliedFor: 'Finance Manager', department: 'Finance', section: 'Accounts', cnic: '35202-2345678-2', qualification: 'ACCA', experienceYears: 5.5, organization: 'Audit Firm', contact: '0321-2223344', city: 'Lahore', remarks: 'Application just received.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-02-20' },
     { id: 3, name: 'Kashif Mehmood', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35201-3456789-3', qualification: 'BSCS', experienceYears: 1, organization: 'Internship at DevCo', contact: '0333-3334455', city: 'Karachi', remarks: 'Fresh graduate, good portfolio.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-15' },
-    { id: 4, name: 'Nida Yasir', positionAppliedFor: 'HR Manager', department: 'Human Resource', section: 'Operations', cnic: '35201-4567890-4', qualification: 'MBA HR', experienceYears: 5, organization: 'Textile Group', contact: '0345-4445566', city: 'Faisalabad', remarks: 'Relevant experience.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-18' },
+    { id: 4, name: 'Nida Yasir', positionAppliedFor: 'HR Officer', department: 'Human Resource', section: 'Talent Acquisition', cnic: '35201-4567890-4', qualification: 'BBA HR', experienceYears: 2, organization: 'Textile Group', contact: '0345-4445566', city: 'Faisalabad', remarks: 'Relevant experience.', status: 'New', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-18' },
     // Status: Under Review
     { id: 5, name: 'Usman Malik', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-5678901-5', qualification: 'MBA IT', experienceYears: 9, organization: 'Telecom Co.', contact: '0312-5556677', city: 'Islamabad', remarks: 'HR is currently reviewing the CV against the JD.', status: 'Under Review', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-12' },
     { id: 6, name: 'Ayesha Khan', positionAppliedFor: 'Charge Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35202-6789012-6', qualification: 'BScN', experienceYears: 4, organization: 'City Hospital', contact: '0313-6667788', city: 'Lahore', remarks: 'Experience looks solid, pending HR verification call.', status: 'Under Review', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-3', appliedDate: '2025-04-10' },
@@ -704,7 +771,7 @@ export const mockCandidates: Candidate[] = [
     // Status: Recommended by Department
     { id: 14, name: 'Ahmed Ali', positionAppliedFor: 'Sr. Database Administrator', department: 'ICT', section: 'Infrastructure', cnic: '35202-4455667-4', qualification: 'MS IT', experienceYears: 8, organization: 'Tech Solutions Inc.', contact: '0333-4455667', city: 'Karachi', remarks: 'Dept head: "Strong candidate, recommend shortlisting".', status: 'Recommended by Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-13' },
     { id: 15, name: 'Saima Noor', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-5566778-5', qualification: 'MBBS', experienceYears: 2, organization: 'Services Hospital', contact: '0345-5566778', city: 'Lahore', remarks: 'Recommended by clinical department head.', status: 'Recommended by Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-04' },
-    { id: 16, name: 'Waqas Younis', positionAppliedFor: 'Finance Manager', department: 'Finance', section: 'Accounts', cnic: '35202-6677889-6', qualification: 'CMA', experienceYears: 7, organization: 'Manufacturing Co.', contact: '0312-6677889', city: 'Gujranwala', remarks: 'Finance Director has approved for shortlisting.', status: 'Recommended by Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-03-01' },
+    { id: 16, name: 'Waqas Younis', positionAppliedFor: 'Finance Manager', department: 'Finance', section: 'Accounts', cnic: '35202-6677889-6', qualification: 'CMA', experienceYears: 7.2, organization: 'Manufacturing Co.', contact: '0312-6677889', city: 'Gujranwala', remarks: 'Finance Director has approved for shortlisting.', status: 'Recommended by Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-03-01' },
     
     // --- Stage 9: Interview Process ---
     // Status: Shortlisted for Interview (Pending Panel Nomination)
@@ -720,15 +787,15 @@ export const mockCandidates: Candidate[] = [
     { id: 25, name: 'Bushra Ansari', positionAppliedFor: 'HR Manager', department: 'Human Resource', section: 'Operations', cnic: '35202-6566778-5', qualification: 'MBA HR', experienceYears: 7, organization: 'University', contact: '0300-6566778', city: 'Lahore', remarks: 'Panel is set.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'HOD of Concerned Department', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', evaluation: [{ panelMemberName: 'Hospital Director / Representative', scores: { 'Leadership': 9, 'HR Knowledge': 8, 'Communication': 9 }, comments: { 'General': 'Very strong candidate.'}}, { panelMemberName: 'HOD of Concerned Department', scores: { 'Leadership': 8, 'HR Knowledge': 9, 'Communication': 8 }, comments: { 'General': 'Excellent fit for the role.'}}], preInterviewFormSent: false, currentSalary: 250000, expectedSalary: 300000, adReference: 'AD-1', appliedDate: '2025-10-28' },
 
     // --- Stage 10 & Beyond ---
-    { id: 26, name: 'Zahid Mehmood', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-6789012-6', qualification: 'MBA', experienceYears: 8, organization: 'Corporate Firm', contact: '0313-6667788', city: 'Lahore', remarks: 'Top performer in interview.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-29' },
-    { id: 27, name: 'Resham', positionAppliedFor: 'Manager', department: 'Administration', section: 'Patient Relations', cnic: '35202-1212121-1', qualification: 'Masters in Public Relations', experienceYears: 10, organization: 'Hotel Group', contact: '0300-1212121', city: 'Lahore', remarks: 'Strong candidate for patient-facing role.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-03-10' },
+    { id: 26, name: 'Zahid Mehmood', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-6789012-6', qualification: 'MBA', experienceYears: 8, organization: 'Corporate Firm', contact: '0313-6667788', city: 'Lahore', remarks: 'Top performer in interview.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-29', currentSalary: 380000, expectedSalary: 450000 },
+    { id: 27, name: 'Resham', positionAppliedFor: 'Admin Manager', department: 'Administration', section: 'Patient Relations', cnic: '35202-1212121-1', qualification: 'Masters in Public Relations', experienceYears: 10, organization: 'Hotel Group', contact: '0300-1212121', city: 'Lahore', remarks: 'Strong candidate for patient-facing role.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-03-10', currentSalary: 180000, expectedSalary: 220000 },
     { id: 201, name: 'Dr. Imran Farooq', positionAppliedFor: 'Consultant Nephrology', department: 'Medical Services', section: 'Nephrology', cnic: '35201-1112223-1', qualification: 'FCPS', experienceYears: 7, organization: 'Shifa International', contact: '0300-1234567', city: 'Islamabad', remarks: 'Highly recommended by the panel for his expertise in transplant nephrology.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], interviewStatus: 'Completed', currentSalary: 500000, expectedSalary: 600000 },
     { id: 202, name: 'Asad Ali', positionAppliedFor: 'Finance Manager', department: 'Finance', section: 'Accounts', cnic: '35201-2223334-2', qualification: 'ACCA', experienceYears: 6.7, organization: 'EY Ford Rhodes', contact: '0321-7654321', city: 'Lahore', remarks: 'Strong financial acumen demonstrated in the interview.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], interviewStatus: 'Completed', currentSalary: 280000, expectedSalary: 350000 },
-    { id: 203, name: 'Sana Bilal', positionAppliedFor: 'Network Technician', department: 'ICT', section: 'Infrastructure', cnic: '35201-3334445-3', qualification: 'BS IT', experienceYears: 5.2, organization: 'Cybernet', contact: '0333-1122334', city: 'Karachi', remarks: 'Good technical skills, fits the team well.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], interviewStatus: 'Completed', currentSalary: 80000, expectedSalary: 100000 },
-    { id: 28, name: 'Adnan Siddiqui', positionAppliedFor: 'Consultant', department: 'Medical Services', section: 'Internal Medicine', cnic: '35202-7890123-7', qualification: 'FCPS', experienceYears: 5, organization: 'City Hospital', contact: '0322-7778899', city: 'Lahore', remarks: 'Final approval received.', status: 'Approved for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-09' },
-    { id: 29, name: 'Samiya Mumtaz', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35202-8901234-8', qualification: 'BSCS', experienceYears: 3, organization: 'Startup Hub', contact: '0334-8889900', city: 'Karachi', remarks: 'Offer sent, awaiting response.', status: 'Offer Sent', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-23' },
-    { id: 30, name: 'Nauman Ijaz', positionAppliedFor: 'Finance Manager', department: 'Finance', section: 'Accounts', cnic: '35202-9012345-9', qualification: 'ACCA', experienceYears: 6, organization: 'Audit Firm', contact: '0301-9990011', city: 'Islamabad', remarks: 'Offer accepted, medical pending.', status: 'Offer Accepted', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-03-11' },
-    { id: 31, name: 'Irfan Khoosat', positionAppliedFor: 'Network Administrator', department: 'ICT', section: 'Infrastructure', cnic: '35202-0123456-0', qualification: 'MCS', experienceYears: 4, organization: 'ISP Provider', contact: '0346-0001122', city: 'Lahore', remarks: 'Medically fit, verification pending.', status: 'Pending Verification', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-24' },
+    { id: 203, name: 'Sana Bilal', positionAppliedFor: 'HR Officer', department: 'Human Resource', section: 'Talent Acquisition', cnic: '35201-3334445-3', qualification: 'BBA HR', experienceYears: 2.2, organization: 'Local Firm', contact: '0333-1122334', city: 'Karachi', remarks: 'Good potential, fits the team well.', status: 'Recommended for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], interviewStatus: 'Completed', currentSalary: 60000, expectedSalary: 75000 },
+    { id: 28, name: 'Adnan Siddiqui', positionAppliedFor: 'Consultant Physician', department: 'Medical Services', section: 'Internal Medicine', cnic: '35202-7890123-7', qualification: 'FCPS', experienceYears: 5, organization: 'City Hospital', contact: '0322-7778899', city: 'Lahore', remarks: 'Final approval received.', status: 'Approved for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-09', finalSalary: 480000 },
+    { id: 29, name: 'Samiya Mumtaz', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35202-8901234-8', qualification: 'BSCS', experienceYears: 3, organization: 'Startup Hub', contact: '0334-8889900', city: 'Karachi', remarks: 'Offer sent, awaiting response.', status: 'Offer Sent', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-23', finalSalary: 110000 },
+    { id: 30, name: 'Nauman Ijaz', positionAppliedFor: 'Finance Manager', department: 'Finance', section: 'Accounts', cnic: '35202-9012345-9', qualification: 'ACCA', experienceYears: 6, organization: 'Audit Firm', contact: '0301-9990011', city: 'Islamabad', remarks: 'Offer accepted, medical pending.', status: 'Offer Accepted', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-03-11', finalSalary: 320000 },
+    { id: 31, name: 'Irfan Khoosat', positionAppliedFor: 'HR Officer', department: 'Human Resource', section: 'Talent Acquisition', cnic: '35202-0123456-0', qualification: 'BBA', experienceYears: 2.8, organization: 'Recruitment Agency', contact: '0346-0001122', city: 'Lahore', remarks: 'Medically fit, verification pending.', status: 'Pending Verification', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-24' },
     { id: 32, name: 'Sania Saeed', positionAppliedFor: 'Charge Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35202-1122334-1', qualification: 'BScN', experienceYears: 5, organization: 'Private Clinic', contact: '0321-1122334', city: 'Lahore', remarks: 'Fully onboarded.', status: 'Hired', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-3', appliedDate: '2025-04-15' },
     // New Medical Candidates for Form Testing
     { id: 33, name: 'Dr. Amna Khan', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35201-1111111-1', qualification: 'MBBS', experienceYears: 2, organization: 'City Hospital', contact: '0301-1234567', city: 'Lahore', remarks: 'Ready for scheduling', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Pending', notified: false }], interviewStatus: 'Pending Schedule', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-10' },
@@ -804,4 +871,41 @@ export const mockCandidates: Candidate[] = [
         organization: 'General Hospital', contact: '0300-0000003', city: 'Lahore', remarks: '', panelNominationStatus: 'Panel Nominated', interviewStatus: 'Completed',
         currentSalary: 380000, recommendedDesignation: 'Associate Consultant'
     },
+     {
+        id: 104, name: 'Zain Malik', cnic: '35201-4567890-4', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development',
+        qualification: 'BSCS', experienceYears: 3, status: 'Recommended for Hire',
+        keySkills: ['React', 'Node.js', 'AWS'],
+        expectedSalary: 120000,
+        interviewPanel: [
+            { name: 'Mr. Khalid Mehmood', role: 'Member', status: 'Available', notified: true },
+            { name: 'Mr. Bilal Chaudhry', role: 'Member', status: 'Available', notified: true },
+        ],
+        evaluation: [
+            { panelMemberName: 'Mr. Khalid Mehmood', scores: { 'qualification': 5, 'work_experience': 4, 'technical_knowledge': 5, 'communication': 4, 'personality': 4 }, comments: {} },
+            { panelMemberName: 'Mr. Bilal Chaudhry', scores: { 'qualification': 4, 'work_experience': 5, 'technical_knowledge': 5, 'communication': 5, 'personality': 4 }, comments: {} },
+        ],
+        organization: 'Systems Limited', contact: '0300-0000004', city: 'Lahore', remarks: 'Strong technical skills.', panelNominationStatus: 'Panel Nominated', interviewStatus: 'Completed',
+        currentSalary: 100000, recommendedDesignation: 'Software Engineer'
+    },
+    {
+        id: 105, name: 'Fatima Ali', cnic: '35201-5678901-5', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development',
+        qualification: 'BSSE', experienceYears: 2, status: 'Rejected', interviewStatus: 'Completed',
+        keySkills: ['Angular', 'Python', 'Azure'],
+        expectedSalary: 110000,
+        interviewPanel: [
+            { name: 'Mr. Khalid Mehmood', role: 'Member', status: 'Available', notified: true },
+            { name: 'Mr. Bilal Chaudhry', role: 'Member', status: 'Available', notified: true },
+        ],
+        evaluation: [
+            { panelMemberName: 'Mr. Khalid Mehmood', scores: { 'qualification': 4, 'work_experience': 3, 'technical_knowledge': 3, 'communication': 4, 'personality': 4 }, comments: {} },
+            { panelMemberName: 'Mr. Bilal Chaudhry', scores: { 'qualification': 4, 'work_experience': 3, 'technical_knowledge': 4, 'communication': 3, 'personality': 3 }, comments: {} },
+        ],
+        organization: 'Contour Software', contact: '0300-0000005', city: 'Karachi', remarks: 'Lacks experience in our core tech stack.', panelNominationStatus: 'Panel Nominated',
+        currentSalary: 90000, recommendedDesignation: 'Software Engineer'
+    },
+     // --- Additional candidates for later stages ---
+    { id: 204, name: 'Hamza Abbasi', positionAppliedFor: 'Accountant', department: 'Finance', section: 'Accounts', cnic: '35201-4445556-4', qualification: 'B.Com', experienceYears: 3.5, organization: 'Local Retailer', contact: '0344-1122334', city: 'Lahore', remarks: 'Approved by hiring manager.', status: 'Approved for Hire', panelNominationStatus: 'Panel Nominated', interviewPanel: [], finalSalary: 95000 },
+    { id: 205, name: 'Maya Ali', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-5556667-5', qualification: 'Diploma in Nursing', experienceYears: 4, organization: 'Fatima Memorial', contact: '0315-2233445', city: 'Lahore', remarks: 'Offer letter sent.', status: 'Offer Sent', panelNominationStatus: 'Panel Nominated', interviewPanel: [], finalSalary: 105000 },
+    // FIX: Completed the malformed final candidate object which was causing a syntax and type error.
+    { id: 206, name: 'Osman Khalid Butt', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-6667778-6', qualification: 'BScN', experienceYears: 2, organization: 'Shalamar Hospital', contact: '0300-6667788', city: 'Lahore', remarks: 'Medically fit, verification pending.', status: 'Pending Verification', panelNominationStatus: 'Panel Nominated', interviewPanel: [] }
 ];
