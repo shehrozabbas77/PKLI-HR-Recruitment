@@ -541,7 +541,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                       Approval Workflow
                   </h3>
                   <ApprovalWorkflow 
-                    stepNames={['Prepared By: Supervisor/Line Manager', 'Approved By: HOD/Divisional Head', 'Reviewed By: HR', 'Completed']}
+                    stepNames={['Supervisor/Line Manager', 'HOD/Divisional Head', 'HR', 'Completed']}
                     currentStepIndex={getApprovalStepIndex(selectedJd.status, selectedJd.approvalHistory)}
                     isCompleted={selectedJd.status === 'Approved'}
                     isRejected={selectedJd.status === 'Rejected' || selectedJd.status === 'Needs Revision'}

@@ -22,10 +22,17 @@ import Login from './pages/Login';
 import { Footer } from './components/Footer';
 import Attendance from './pages/Attendance';
 
+// Automatically calculate vacant positions from the initial mock data to ensure accuracy.
+const processedStaffingPlan = mockStaffingPlan.map(position => ({
+  ...position,
+  vacant: position.positions2526 - position.onBoard,
+}));
+
+
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(1);
-  const [staffingPlan, setStaffingPlan] = useState<StaffingPosition[]>(mockStaffingPlan);
+  const [staffingPlan, setStaffingPlan] = useState<StaffingPosition[]>(processedStaffingPlan);
   const [jobDescriptions, setJobDescriptions] = useState<JobDescriptionType[]>(mockJobDescriptions);
   const [requisitions, setRequisitions] = useState<Requisition[]>(mockRequisitions);
   const [candidates, setCandidates] = useState<Candidate[]>(mockCandidates);

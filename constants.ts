@@ -28,8 +28,8 @@ export const NAVIGATION_STRUCTURE: Step[] = [
    { 
     id: 400, title: 'Interview Process', shortTitle: 'Interview Process', description: '',
     children: [
-        { id: 9, title: 'Panel Nomination', shortTitle: 'Panel Nomination', description: 'Nominate interview panels for shortlisted candidates.' },
-        { id: 10, title: 'Interview Scheduling & Communication', shortTitle: 'Interview Scheduling', description: 'Schedule interviews, send invites, and manage pre-interview forms for candidates with nominated panels.' },
+        { id: 10, title: 'Interview Scheduling & Communication', shortTitle: 'Interview Scheduling', description: 'Schedule interviews, send invites, and manage pre-interview forms for shortlisted candidates.' },
+        { id: 9, title: 'Panel Nomination', shortTitle: 'Panel Nomination', description: 'Nominate interview panels for scheduled candidates.' },
         { id: 11, title: 'Candidate Attendance & Verification', shortTitle: 'Attendance', description: 'Mark attendance and verify documents for candidates on the interview day.' },
         { id: 12, title: 'Interview Evaluation', shortTitle: 'Interview Evaluation', description: 'Record evaluation scores and comments from the interview panel.' },
     ]

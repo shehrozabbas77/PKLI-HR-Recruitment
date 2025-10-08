@@ -482,12 +482,12 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
   const [bulkScheduleStartTime, setBulkScheduleStartTime] = useState('');
   const [bulkNominationJobTitle, setBulkNominationJobTitle] = useState<string | null>(null);
   
-  const candidatesForNomination = useMemo(() =>
-    candidates.filter(c => c.status === 'Shortlisted for Interview' && c.panelNominationStatus === 'Pending Nomination')
+  const candidatesForScheduling = useMemo(() => 
+    candidates.filter(c => c.status === 'Shortlisted for Interview')
   , [candidates]);
   
-  const candidatesForScheduling = useMemo(() => 
-    candidates.filter(c => c.panelNominationStatus === 'Panel Nominated')
+  const candidatesForNomination = useMemo(() =>
+    candidates.filter(c => c.interviewStatus === 'Scheduled' && c.panelNominationStatus === 'Pending Nomination')
   , [candidates]);
 
   const candidatesForEvaluation = useMemo(() =>
@@ -592,7 +592,6 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
           return {
             ...c,
             panelNominationStatus: 'Panel Nominated',
-            interviewStatus: 'Pending Schedule',
             interviewPanel: newPanelMembers
           };
         }
@@ -605,7 +604,6 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
           c.id === selectedCandidateForPanel.id 
           ? { ...c, 
               panelNominationStatus: 'Panel Nominated',
-              interviewStatus: 'Pending Schedule',
               interviewPanel: newPanelMembers
             } 
           : c
@@ -722,7 +720,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle>Interview Scheduling & Communication</CardTitle>
-                  <CardDescription>Set interview times and send forms/invites to candidates with nominated panels.</CardDescription>
+                  <CardDescription>Set interview times and send forms/invites to shortlisted candidates.</CardDescription>
                 </div>
                 {onNavigate && (
                   <button
@@ -826,7 +824,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                                       <p className="text-sm text-gray-500">{candidate.positionAppliedFor}</p>
                                   </td>
                                   <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title={candidate.interviewPanel.map(p => p.name).join(', ')}>
-                                      {candidate.interviewPanel.map(p => p.name).join(', ')}
+                                      {candidate.interviewPanel.map(p => p.name).join(', ') || 'Panel Not Nominated'}
                                   </td>
                                   <td className="px-6 py-4">
                                       <input 
@@ -880,7 +878,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Panel Nomination</CardTitle>
-                  <CardDescription>Nominate an interview panel for shortlisted candidates.</CardDescription>
+                  <CardDescription>Nominate an interview panel for scheduled candidates.</CardDescription>
                 </div>
                 <button onClick={() => setIsBoardModalOpen(true)} className="px-4 py-2 bg-[#0076b6] text-white rounded-md hover:bg-[#005a8c] text-sm font-semibold transition-colors flex items-center">
                     <ClipboardListIcon className="w-4 h-4 mr-2" /> Manage Selection Boards

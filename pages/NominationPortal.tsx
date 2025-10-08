@@ -274,12 +274,22 @@ const NominationPortal: React.FC<NominationPortalProps> = ({ candidates, setCand
                                                     return (
                                                         <div key={c.id} className="flex justify-between items-center bg-white p-3 rounded-md border">
                                                             <div>
-                                                                <p className="font-semibold text-gray-900">{c.name}</p>
+                                                                <p className="font-semibold text-gray-900 flex items-center">
+                                                                    {c.name}
+                                                                    {c.attendanceStatus && c.attendanceStatus !== 'Pending' && (
+                                                                        <span className={`ml-3 px-2 py-0.5 text-xs font-semibold rounded-full ${
+                                                                            c.attendanceStatus === 'Present' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                                        }`}>
+                                                                            {c.attendanceStatus}
+                                                                        </span>
+                                                                    )}
+                                                                </p>
                                                                 <p className="text-sm text-gray-500">Interview: {c.interviewTime ? new Date(c.interviewTime).toLocaleString() : 'N/A'}</p>
                                                             </div>
                                                             <button 
                                                                 onClick={() => handleOpenEvaluation(c)}
-                                                                disabled={!['Scheduled', 'Completed'].includes(c.interviewStatus || '')}
+                                                                disabled={(!isEvaluated && c.attendanceStatus !== 'Present') || !['Scheduled', 'Completed'].includes(c.interviewStatus || '')}
+                                                                title={!isEvaluated && c.attendanceStatus !== 'Present' ? 'Evaluation is only available for candidates marked as "Present"' : ''}
                                                                 className={`px-4 py-2 font-semibold rounded-md text-white transition-colors ${
                                                                     isEvaluated ? 'bg-green-600 hover:bg-green-700' : 'bg-teal-600 hover:bg-teal-700'
                                                                 } disabled:bg-gray-400 disabled:cursor-not-allowed`}
