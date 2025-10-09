@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import type { JobDescription, JobDescriptionStatus, StaffingPosition } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -26,10 +27,10 @@ const initialJdFormData = {
     designation: '',
     department: 'ICT',
     section: '',
-    reportsTo: '',
-    reportingPositions: '',
+    reportsTo: [] as string[],
+    reportingPositions: [] as string[],
     qualification: [] as string[],
-    skills: '',
+    skills: [] as string[],
     experience: '',
     registrationLicense: [] as string[],
     jobSummary: '',
@@ -51,7 +52,11 @@ const DetailItem: React.FC<{ label: string, value: string | string[] | React.Rea
     <div className="py-2">
         <p className="text-sm font-semibold text-gray-500">{label}</p>
         {Array.isArray(value) ? (
-            <p className="text-base text-gray-800">{value.join(', ')}</p>
+            value.length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-1">
+                    {value.map((item, index) => <span key={index} className="bg-slate-100 text-slate-700 text-sm font-medium px-2.5 py-1 rounded-full">{item}</span>)}
+                </div>
+            ) : <p className="text-base text-gray-800">N/A</p>
         ) : typeof value === 'string' ? (
              <p className="text-base text-gray-800">{value}</p>
         ) : (
@@ -173,6 +178,54 @@ const MultiSelectDropdown: React.FC<{
   );
 };
 
+const TagsInput: React.FC<{
+  tags: string[];
+  setTags: (tags: string[]) => void;
+  placeholder: string;
+}> = ({ tags, setTags, placeholder }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const newTag = inputValue.trim();
+      if (newTag && !tags.includes(newTag)) {
+        setTags([...tags, newTag]);
+      }
+      setInputValue('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 p-2 border border-gray-300 rounded-md shadow-sm bg-white min-h-[42px]">
+      {tags.map((tag, index) => (
+        <div key={index} className="flex items-center bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-1 rounded-full">
+          {tag}
+          <button
+            type="button"
+            className="ml-2 text-blue-500 hover:text-blue-700"
+            onClick={() => removeTag(tag)}
+          >
+            <XIcon className="w-3 h-3" />
+          </button>
+        </div>
+      ))}
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        className="flex-1 min-w-[150px] bg-transparent border-none focus:ring-0 text-base"
+      />
+    </div>
+  );
+};
+
 
 const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions, setJobDescriptions, staffingPlan }) => {
   const [selectedJd, setSelectedJd] = useState<JobDescription | null>(null);
@@ -192,7 +245,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
 
   const availableSections = departmentSections[newJdData.department] || [];
   const qualificationsList = ['Matric', 'Intermediate', 'Bachelors', 'Masters', 'PhD', 'Diploma'];
-  const licensesList = ['N/A', 'PMDC', 'PEC', 'CompTIA Security+', 'CISSP', 'SHRM-CP', 'PMP'];
+  const licensesList = ['N/A', 'PMDC', 'PNC', 'PEC', 'CompTIA Security+', 'CISSP', 'SHRM-CP', 'PMP'];
 
   const availableDesignations = useMemo(() => {
     if (!newJdData.department) return [];
@@ -256,7 +309,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
         experience: jd.experience,
         registrationLicense: jd.registrationLicense,
         jobSummary: jd.jobSummary,
-        jobFunctions: jd.jobFunctions.join('\n'), // convert array back to string for textarea
+        jobFunctions: jd.jobFunctions.join('\n'),
         preparedBy: jd.preparedBy,
     });
     setIsCreateModalOpen(true); // Reuse the create modal
@@ -330,10 +383,6 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
     }
   };
   
-  const handleMultiSelectChange = (fieldName: 'qualification' | 'registrationLicense', values: string[]) => {
-      setNewJdData(prev => ({ ...prev, [fieldName]: values }));
-  };
-
   const handleJdSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingJd) {
@@ -650,11 +699,11 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                         </div>
                          <div className="col-span-3">
                             <label htmlFor="reportsTo" className="block text-sm font-medium text-gray-700">Reports To</label>
-                            <input type="text" name="reportsTo" id="reportsTo" value={newJdData.reportsTo} onChange={handleJdInputChange} required className="mt-1 w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-base px-3 py-2" />
+                            <TagsInput tags={newJdData.reportsTo} setTags={(tags) => setNewJdData(prev => ({...prev, reportsTo: tags}))} placeholder="Type a position and press Enter" />
                         </div>
                          <div className="col-span-3">
                             <label htmlFor="reportingPositions" className="block text-sm font-medium text-gray-700">Reporting Positions</label>
-                            <input type="text" name="reportingPositions" id="reportingPositions" value={newJdData.reportingPositions} onChange={handleJdInputChange} className="mt-1 w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-base px-3 py-2" />
+                            <TagsInput tags={newJdData.reportingPositions} setTags={(tags) => setNewJdData(prev => ({...prev, reportingPositions: tags}))} placeholder="Type a position and press Enter" />
                         </div>
                     </div>
                 </div>
@@ -664,19 +713,19 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                     <div className="grid grid-cols-6 gap-6">
                         <div className="col-span-3">
                             <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Education</label>
-                            <MultiSelectDropdown options={qualificationsList} selected={newJdData.qualification} onChange={(vals) => handleMultiSelectChange('qualification', vals)} placeholder="Select qualifications"/>
+                            <MultiSelectDropdown options={qualificationsList} selected={newJdData.qualification} onChange={(vals) => setNewJdData(prev => ({...prev, qualification: vals}))} placeholder="Select qualifications"/>
                         </div>
                         <div className="col-span-3">
                            <label className="block text-sm font-medium text-gray-700 mb-1">Certifications / Licenses</label>
-                           <MultiSelectDropdown options={licensesList} selected={newJdData.registrationLicense} onChange={(vals) => handleMultiSelectChange('registrationLicense', vals)} placeholder="Select licenses"/>
+                           <MultiSelectDropdown options={licensesList} selected={newJdData.registrationLicense} onChange={(vals) => setNewJdData(prev => ({...prev, registrationLicense: vals}))} placeholder="Select licenses"/>
                         </div>
                          <div className="col-span-3">
                             <label htmlFor="experience" className="block text-sm font-medium text-gray-700">Required Experience</label>
                             <input type="text" name="experience" id="experience" placeholder="e.g., 5+ years" value={newJdData.experience} onChange={handleJdInputChange} required className="mt-1 w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-base px-3 py-2" />
                         </div>
                         <div className="col-span-3">
-                            <label htmlFor="skills" className="block text-sm font-medium text-gray-700">Key Skills (comma-separated)</label>
-                            <input type="text" name="skills" id="skills" placeholder="e.g., Project Management, SQL" value={newJdData.skills} onChange={handleJdInputChange} required className="mt-1 w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-base px-3 py-2" />
+                            <label htmlFor="skills" className="block text-sm font-medium text-gray-700">Key Skills</label>
+                            <TagsInput tags={newJdData.skills} setTags={(tags) => setNewJdData(prev => ({...prev, skills: tags}))} placeholder="Type a skill and press Enter" />
                         </div>
                     </div>
                 </div>

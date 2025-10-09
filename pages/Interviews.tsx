@@ -481,6 +481,9 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
   const [bulkScheduleStartTime, setBulkScheduleStartTime] = useState('');
   const [bulkNominationJobTitle, setBulkNominationJobTitle] = useState<string | null>(null);
   const [editingTimeId, setEditingTimeId] = useState<number | null>(null);
+
+  const scheduleHeaderCheckboxRef = useRef<HTMLInputElement>(null);
+  const evaluationHeaderCheckboxRef = useRef<HTMLInputElement>(null);
   
   const candidatesForScheduling = useMemo(() => 
     candidates.filter(c => c.status === 'Shortlisted for Interview')
@@ -506,6 +509,10 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
   useEffect(() => {
     setSectionFilter('All');
   }, [departmentFilter]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [jobTitleFilter, departmentFilter, sectionFilter, interviewStatusFilter, activeView]);
 
 
   const filteredForScheduling = useMemo(() => 
@@ -537,6 +544,28 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
           return jobMatch && deptMatch && sectionMatch && statusMatch;
       })
   , [candidatesForEvaluation, jobTitleFilter, departmentFilter, sectionFilter, interviewStatusFilter]);
+
+  const selectableForScheduling = useMemo(() => 
+    filteredForScheduling.filter(c => !c.interviewStatus || c.interviewStatus === 'Pending Schedule'),
+  [filteredForScheduling]);
+
+  const selectableForEvaluation = useMemo(() => 
+    filteredForEvaluation.filter(c => c.interviewStatus === 'Scheduled'),
+  [filteredForEvaluation]);
+
+  useEffect(() => {
+    if (activeView === 'interview-scheduling' && scheduleHeaderCheckboxRef.current) {
+        const selectableCount = selectableForScheduling.length;
+        const currentSelectedCount = selectedIds.filter(id => selectableForScheduling.some(c => c.id === id)).length;
+        scheduleHeaderCheckboxRef.current.checked = selectableCount > 0 && currentSelectedCount === selectableCount;
+        scheduleHeaderCheckboxRef.current.indeterminate = currentSelectedCount > 0 && currentSelectedCount < selectableCount;
+    } else if (activeView === 'evaluation' && evaluationHeaderCheckboxRef.current) {
+        const selectableCount = selectableForEvaluation.length;
+        const currentSelectedCount = selectedIds.filter(id => selectableForEvaluation.some(c => c.id === id)).length;
+        evaluationHeaderCheckboxRef.current.checked = selectableCount > 0 && currentSelectedCount === selectableCount;
+        evaluationHeaderCheckboxRef.current.indeterminate = currentSelectedCount > 0 && currentSelectedCount < selectableCount;
+    }
+  }, [selectedIds, selectableForScheduling, selectableForEvaluation, activeView]);
 
   const groupedForNomination = useMemo(() => {
     return filteredForNomination.reduce((acc, candidate) => {
@@ -693,6 +722,33 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
       setNotification({ type: 'success', message: `${selectedIds.length} interviews have been scheduled successfully.` });
   };
   
+  const handleBulkMarkCompleted = () => {
+    if (selectedIds.length === 0) return;
+    setCandidates(prev => prev.map(c => 
+        selectedIds.includes(c.id) && c.interviewStatus === 'Scheduled'
+        ? { ...c, interviewStatus: 'Completed' } 
+        : c
+    ));
+    setNotification({ type: 'success', message: `${selectedIds.length} interviews have been marked as completed.` });
+    setSelectedIds([]);
+  };
+
+  const handleSelectAllScheduling = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+        setSelectedIds(selectableForScheduling.map(c => c.id));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+
+  const handleSelectAllEvaluation = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+        setSelectedIds(selectableForEvaluation.map(c => c.id));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+  
   // FIX: Corrected an undefined variable `i` to `id` when adding a new selection.
   const handleIndividualSelect = (id: number) => {
       setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -774,13 +830,6 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                       </div>
                   </div>
                    <div className="pt-4 mt-4 border-t flex items-center space-x-4">
-                      <button onClick={() => {
-                        const schedulableIds = filteredForScheduling
-                          .filter(c => !c.interviewStatus || c.interviewStatus === 'Pending Schedule')
-                          .map(c => c.id);
-                        setSelectedIds(schedulableIds);
-                      }} className="px-4 py-2 bg-gray-600 text-white rounded-md text-sm font-semibold hover:bg-gray-700">Select All</button>
-                      <button onClick={() => setSelectedIds([])} className="px-4 py-2 bg-gray-600 text-white rounded-md text-sm font-semibold hover:bg-gray-700">Deselect All</button>
                       <button 
                           onClick={() => setIsBulkScheduleModalOpen(true)}
                           disabled={selectedIds.length === 0}
@@ -796,7 +845,15 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                     <table className="w-full text-base text-left text-gray-600">
                         <thead className="text-sm text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th className="p-4 w-4"><span className="sr-only">Select</span></th>
+                                <th className="p-4 w-4">
+                                  <input 
+                                    type="checkbox"
+                                    ref={scheduleHeaderCheckboxRef}
+                                    onChange={handleSelectAllScheduling}
+                                    disabled={selectableForScheduling.length === 0}
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                </th>
                                 <th className="px-6 py-3">Candidate</th>
                                 <th className="px-6 py-3">Interview Panel</th>
                                 <th className="px-6 py-3">Interview Time</th>
@@ -1057,12 +1114,30 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                            </div>
                       </div>
                   </div>
+                  <div className="pt-4 mt-4 border-t flex items-center space-x-4">
+                      <button 
+                          onClick={handleBulkMarkCompleted}
+                          disabled={selectedIds.length === 0}
+                          className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      >
+                          Mark Selected ({selectedIds.length}) as Completed
+                      </button>
+                  </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
               <table className="w-full text-base text-left text-gray-600">
                 <thead className="text-sm text-gray-700 uppercase bg-gray-50">
                   <tr>
+                    <th className="p-4 w-4">
+                        <input
+                            type="checkbox"
+                            ref={evaluationHeaderCheckboxRef}
+                            onChange={handleSelectAllEvaluation}
+                            disabled={selectableForEvaluation.length === 0}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                    </th>
                     <th className="px-6 py-3">Candidate</th>
                     <th className="px-6 py-3">Job Title</th>
                     <th className="px-6 py-3">Interview Status</th>
@@ -1073,9 +1148,20 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                   {filteredForEvaluation.map(candidate => {
                       const displayStatus = candidate.interviewStatus === 'Completed' ? 'Completed' : 'In Process';
                       const displayStatusColor = candidate.interviewStatus === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                      const canBeSelected = candidate.interviewStatus === 'Scheduled';
                       
                       return (
                         <tr key={candidate.id} className="border-b bg-white">
+                          <td className="p-4">
+                            {canBeSelected && (
+                                <input
+                                    type="checkbox"
+                                    checked={selectedIds.includes(candidate.id)}
+                                    onChange={() => handleIndividualSelect(candidate.id)}
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                            )}
+                          </td>
                           <td className="px-6 py-4 font-semibold">{candidate.name}</td>
                           <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
                           <td className="px-6 py-4">
@@ -1099,7 +1185,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                     })}
                     {filteredForEvaluation.length === 0 && (
                         <tr>
-                            <td colSpan={4} className="text-center py-10 text-gray-500">
+                            <td colSpan={5} className="text-center py-10 text-gray-500">
                                 No candidates match the current filter criteria.
                             </td>
                         </tr>

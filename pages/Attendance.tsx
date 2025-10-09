@@ -97,6 +97,13 @@ const Attendance: React.FC<AttendanceProps> = ({ candidates, setCandidates }) =>
         setSelectedCandidateIds([]);
     };
 
+    const handleBulkMarkPresent = () => {
+        setCandidates(prev => prev.map(c => 
+            selectedCandidateIds.includes(c.id) ? { ...c, attendanceStatus: 'Present', documentChecklist: c.documentChecklist || {} } : c
+        ));
+        setSelectedCandidateIds([]);
+    };
+
 
     const handleOpenChecklist = (candidate: Candidate) => {
         setSelectedCandidate(candidate);
@@ -199,6 +206,13 @@ const Attendance: React.FC<AttendanceProps> = ({ candidates, setCandidates }) =>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="p-4 bg-slate-50 border-b flex items-center space-x-4">
+                        <button
+                            onClick={handleBulkMarkPresent}
+                            disabled={selectedCandidateIds.length === 0}
+                            className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            Mark Selected ({selectedCandidateIds.length}) as Present
+                        </button>
                         <button
                             onClick={handleBulkMarkAbsent}
                             disabled={selectedCandidateIds.length === 0}

@@ -210,12 +210,12 @@ export interface JobDescription {
   designation: string;
   department: string;
   section: string;
-  reportsTo: string;
-  reportingPositions: string;
+  reportsTo: string[];
+  reportingPositions: string[];
 
   // Job Specifications
   qualification: string[];
-  skills: string;
+  skills: string[];
   experience: string; // e.g., "5 Years"
   registrationLicense: string[];
   

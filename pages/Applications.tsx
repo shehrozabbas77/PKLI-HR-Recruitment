@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Candidate, CandidateStatus, JobAdvertisement } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
 import { Modal } from '../components/Modal';
@@ -72,6 +72,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
     const [isFetching, setIsFetching] = useState(false);
     const [selectedAdId, setSelectedAdId] = useState<number | null>(null);
     const [dataFetchedForAd, setDataFetchedForAd] = useState<number | null>(null);
+    const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
     const handleGetData = () => {
         if (!selectedAdId) return;
@@ -219,6 +220,15 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         }
         return [];
     }, [filteredCandidates, stage]);
+    
+    useEffect(() => {
+        if (headerCheckboxRef.current) {
+            const selectableCount = selectableCandidates.length;
+            const selectedCount = selectedCandidateIds.filter(id => selectableCandidates.some(c => c.id === id)).length;
+            headerCheckboxRef.current.checked = selectableCount > 0 && selectedCount === selectableCount;
+            headerCheckboxRef.current.indeterminate = selectedCount > 0 && selectedCount < selectableCount;
+        }
+    }, [selectedCandidateIds, selectableCandidates]);
 
     const handleIndividualSelect = (candidateId: number) => {
         setSelectedCandidateIds(prev => 
@@ -226,6 +236,14 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                 ? prev.filter(id => id !== candidateId)
                 : [...prev, candidateId]
         );
+    };
+    
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            setSelectedCandidateIds(selectableCandidates.map(c => c.id));
+        } else {
+            setSelectedCandidateIds([]);
+        }
     };
 
     const handleSendSelected = () => {
@@ -464,8 +482,6 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                            {renderFilterControls}
                             {stage === 'collection' && (
                                 <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
-                                    <button onClick={() => setSelectedCandidateIds(selectableCandidates.map(c => c.id))} className="px-3 py-1 text-sm font-semibold text-white bg-gray-600 rounded-md hover:bg-gray-700">Select All</button>
-                                    <button onClick={() => setSelectedCandidateIds([])} className="px-3 py-1 text-sm font-semibold text-white bg-gray-600 rounded-md hover:bg-gray-700">Deselect All</button>
                                     <button onClick={handleSendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-[#0076b6] rounded-md hover:bg-[#005a8c] disabled:bg-gray-400 disabled:cursor-not-allowed">
                                         Send Selected ({selectedCandidateIds.length}) to Department
                                     </button>
@@ -473,8 +489,6 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                             )}
                             {stage === 'department-review' && (
                                 <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
-                                    <button onClick={() => setSelectedCandidateIds(selectableCandidates.map(c => c.id))} className="px-3 py-1 text-sm font-semibold text-white bg-gray-600 rounded-md hover:bg-gray-700">Select All</button>
-                                    <button onClick={() => setSelectedCandidateIds([])} className="px-3 py-1 text-sm font-semibold text-white bg-gray-600 rounded-md hover:bg-gray-700">Deselect All</button>
                                     <button onClick={handleRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
                                         Recommend Selected ({selectedCandidateIds.length})
                                     </button>
@@ -485,8 +499,6 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                             )}
                             {stage === 'final-shortlisting' && (
                                 <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
-                                    <button onClick={() => setSelectedCandidateIds(selectableCandidates.map(c => c.id))} className="px-3 py-1 text-sm font-semibold text-white bg-gray-600 rounded-md hover:bg-gray-700">Select All</button>
-                                    <button onClick={() => setSelectedCandidateIds([])} className="px-3 py-1 text-sm font-semibold text-white bg-gray-600 rounded-md hover:bg-gray-700">Deselect All</button>
                                     <button onClick={handleShortlistSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
                                         Shortlist Selected ({selectedCandidateIds.length})
                                     </button>
@@ -505,7 +517,13 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                 <tr>
                                     {(stage === 'collection' || stage === 'department-review' || stage === 'final-shortlisting') && (
                                         <th scope="col" className="px-6 py-3 w-12">
-                                            <span className="sr-only">Select</span>
+                                            <input
+                                                type="checkbox"
+                                                ref={headerCheckboxRef}
+                                                onChange={handleSelectAll}
+                                                disabled={selectableCandidates.length === 0}
+                                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            />
                                         </th>
                                     )}
                                     <th scope="col" className="px-6 py-3">Name</th>
