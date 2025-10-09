@@ -4,7 +4,7 @@ import { Card, CardContent } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { ApprovalWorkflow } from '../components/ApprovalWorkflow';
 import { ApprovalModal } from '../components/ApprovalModal';
-import { UserIcon, BuildingIcon, BriefcaseIcon, CheckIcon, XIcon, FilePlusIcon, HistoryIcon } from '../components/icons';
+import { UserIcon, BuildingIcon, BriefcaseIcon, CheckIcon, XIcon, FilePlusIcon, HistoryIcon, HourglassIcon } from '../components/icons';
 import { departmentSections } from '../constants';
 
 interface RequisitionProps {
@@ -15,70 +15,115 @@ interface RequisitionProps {
   advertisements: JobAdvertisement[];
 }
 
-const CompactApprovalWorkflow: React.FC<{ status: RequisitionStatus; history: ApprovalStep[] }> = ({ status, history }) => {
-    const steps = ['HOD', 'Div. Director', 'HR Review', 'Approved'];
-    const icons: { [key: string]: React.ReactNode } = {
-        'HOD': <UserIcon className="w-5 h-5" />,
-        'Div. Director': <BuildingIcon className="w-5 h-5" />,
-        'HR Review': <BriefcaseIcon className="w-5 h-5" />,
-        'Approved': <CheckIcon className="w-5 h-5" />,
+const ActivityLog: React.FC<{ requisition: Requisition }> = ({ requisition }) => {
+    // Combine requested event and history events
+    const timeline = [
+        {
+            status: 'Created' as const,
+            role: 'Requester',
+            approver: requisition.requestedBy,
+            date: requisition.requestedDate,
+            comments: `Initial Justification: ${requisition.justification}`,
+        },
+        ...requisition.approvalHistory
+    ];
+
+    const timeSince = (date: string | undefined): string => {
+        if (!date) return '';
+        const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return Math.floor(seconds) + " seconds ago";
     };
 
-    let currentStepIndex = 0;
-    if (status === 'Pending Director/Dean Approval') currentStepIndex = 1;
-    else if (status === 'Pending HR Review') currentStepIndex = 2;
-    else if (status === 'Approved') currentStepIndex = 3;
-    else if (status === 'Rejected' || status === 'Needs Revision') {
-        const rejectedIdx = history.findIndex(h => h.status === 'Rejected');
-        currentStepIndex = rejectedIdx !== -1 ? rejectedIdx : 0;
-    }
-    
     return (
-        <div className="flex items-center">
-            {steps.map((step, index) => {
-                let stepStatus: 'completed' | 'current' | 'pending' | 'rejected' = 'pending';
+        <div>
+            <h4 className="font-semibold text-lg text-gray-800 my-4">Activity Log</h4>
+            <div className="border-l-2 border-slate-200 ml-4 pl-8 space-y-8">
+                {timeline.map((event, index) => {
+                    const isPending = event.status === 'Pending';
+                    const previousEventDate = index > 0 ? timeline[index - 1]?.date : requisition.requestedDate;
+                    
+                    const isReturn = event.status === 'Rejected' && requisition.status !== 'Rejected';
 
-                if (status === 'Approved') {
-                    stepStatus = 'completed';
-                } else if (status === 'Rejected' || status === 'Needs Revision') {
-                    if (index < currentStepIndex) stepStatus = 'completed';
-                    else if (index === currentStepIndex) stepStatus = 'rejected';
-                    else stepStatus = 'pending';
-                } else {
-                    if (index < currentStepIndex) stepStatus = 'completed';
-                    else if (index === currentStepIndex) stepStatus = 'current';
-                    else stepStatus = 'pending';
-                }
+                    let icon;
+                    let iconBg;
+                    let title;
 
-                const colors = {
-                    completed: { circle: 'bg-green-500 text-white', line: 'bg-green-500', text: 'text-green-600' },
-                    current: { circle: 'bg-[#e0f2fe] text-[#0076b6]', line: 'bg-gray-300', text: 'text-[#0076b6]' },
-                    pending: { circle: 'bg-gray-200 text-gray-400', line: 'bg-gray-300', text: 'text-gray-500' },
-                    rejected: { circle: 'bg-[#c01823] text-white', line: 'bg-gray-300', text: 'text-[#c01823]' }
-                };
-                
-                const style = colors[stepStatus];
-                const isCompleted = stepStatus === 'completed';
-                const connectorStyle = (index < currentStepIndex && !(status === 'Rejected' || status === 'Needs Revision')) || status === 'Approved' ? colors.completed.line : colors.pending.line;
+                    if (isReturn) {
+                        icon = <HistoryIcon className="w-5 h-5 text-amber-600" />;
+                        iconBg = 'bg-amber-100';
+                        title = `Returned by ${event.approver || event.role}`;
+                    } else {
+                        switch (event.status) {
+                            case 'Approved':
+                            case 'Reviewed':
+                                icon = <CheckIcon className="w-5 h-5 text-green-600" />;
+                                iconBg = 'bg-green-100';
+                                title = `${event.status} by ${event.approver || event.role}`;
+                                break;
+                            case 'Created':
+                                icon = <CheckIcon className="w-5 h-5 text-green-600" />;
+                                iconBg = 'bg-green-100';
+                                title = `Request Created by ${event.approver}`;
+                                break;
+                            case 'Rejected':
+                                icon = <XIcon className="w-5 h-5 text-red-600" />;
+                                iconBg = 'bg-red-100';
+                                title = `Rejected by ${event.approver || event.role}`;
+                                break;
+                            case 'Pending':
+                                icon = <HourglassIcon className="w-5 h-5 text-blue-600" />;
+                                iconBg = 'bg-blue-100';
+                                title = `Pending ${event.role} Approval`;
+                                break;
+                            default:
+                                icon = null;
+                        }
+                    }
 
 
-                return (
-                    <React.Fragment key={step}>
-                        <div className="flex flex-col items-center">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${style.circle}`}>
-                                {isCompleted ? <CheckIcon className="w-5 h-5" /> : icons[step]}
+                    return (
+                        <div key={index} className="relative">
+                            <div className={`absolute -left-[45px] top-1 w-8 h-8 rounded-full flex items-center justify-center ring-4 ring-white ${iconBg}`}>
+                                {icon}
                             </div>
-                            <span className={`mt-2 text-xs font-semibold ${style.text}`}>{step}</span>
+                            <div>
+                                <div className="flex justify-between items-center">
+                                    <p className="font-semibold text-gray-800">
+                                        {title}
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                        {event.date ? new Date(event.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : ''}
+                                    </p>
+                                </div>
+                                {event.comments && (
+                                    <p className="mt-2 text-sm text-gray-700 bg-gray-50 p-3 border rounded-md italic">
+                                        "{event.comments}"
+                                    </p>
+                                )}
+                                {isPending && (
+                                    <p className="mt-2 text-sm font-semibold text-blue-700">
+                                        Pending for {timeSince(previousEventDate)}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        {index < steps.length - 1 && (
-                            <div className={`flex-1 h-1 mx-2 ${connectorStyle}`}></div>
-                        )}
-                    </React.Fragment>
-                )
-            })}
+                    );
+                })}
+            </div>
         </div>
     );
 };
+
 
 const initialFormData = {
     reqId: '',
@@ -251,7 +296,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
             section: selectedJd.section,
             qualification: Array.isArray(selectedJd.qualification) ? selectedJd.qualification.join(', ') : selectedJd.qualification,
             experience: selectedJd.experience,
-            requiredSkills: selectedJd.skills,
+            requiredSkills: Array.isArray(selectedJd.skills) ? selectedJd.skills.join(', ') : selectedJd.skills,
             licenseRequirement: Array.isArray(selectedJd.registrationLicense) && selectedJd.registrationLicense.some(lic => lic.toLowerCase() !== 'n/a') ? 'Yes' : 'No',
             jobDescription: `Internal JD #${selectedJd.id}`,
         };
@@ -307,7 +352,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
     const requisition = requisitions.find(r => r.id === requisitionId);
     if (!requisition) return;
 
-    const now = new Date().toISOString().split('T')[0];
+    const now = new Date().toISOString();
     let newStatus: RequisitionStatus = requisition.status;
     const newApprovalHistory: ApprovalStep[] = JSON.parse(JSON.stringify(requisition.approvalHistory));
     let completionDate = requisition.completionDate;
@@ -340,8 +385,18 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
         newStatus = 'Rejected';
         updateCurrentStep('Rejected');
     } else if (action === 'return') {
-        newStatus = 'Needs Revision';
-        updateCurrentStep('Rejected');
+        updateCurrentStep('Rejected'); // Log the return action on the current step
+
+        if (requisition.status === 'Pending HR Review') {
+            newStatus = 'Pending Director/Dean Approval';
+            newApprovalHistory.push({ role: 'Director/Dean', status: 'Pending' });
+        } else if (requisition.status === 'Pending Director/Dean Approval') {
+            newStatus = 'Pending HOD Approval';
+            newApprovalHistory.push({ role: 'HOD', status: 'Pending' });
+        } else { // Default case, e.g., returned by HOD (first step)
+            newStatus = 'Needs Revision';
+            // No new pending step is added, it goes back to the requester.
+        }
     }
     
     const updatedRequisition = { 
@@ -483,17 +538,42 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                                 <p className="text-sm text-gray-600 italic mt-1 truncate" title={req.justification}>"{req.justification}"</p>
                             </div>
                             <div className="col-span-4 px-4 py-6">
-                                {activeTab === 'approved' || req.status === 'Rejected' || req.status === 'Needs Revision' ? (
-                                     <span className={`px-3 py-1 text-base font-semibold rounded-full ${
-                                         req.status === 'Approved' ? 'bg-green-100 text-green-700' : 
-                                         req.status === 'Rejected' ? 'bg-[#fde8e9] text-[#c01823]' : 
-                                         'bg-amber-100 text-amber-700'
-                                     }`}>
-                                        {req.status}
-                                    </span>
-                                ) : (
-                                    <CompactApprovalWorkflow status={req.status} history={req.approvalHistory} />
-                                )}
+                                {(() => {
+                                    const timeSince = (date: string | undefined): string => {
+                                        if (!date) return '';
+                                        const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+                                        if (seconds < 60) return `${Math.floor(seconds)}s ago`;
+                                        const minutes = seconds / 60;
+                                        if (minutes < 60) return `${Math.floor(minutes)}m ago`;
+                                        const hours = minutes / 60;
+                                        if (hours < 24) return `${Math.floor(hours)}h ago`;
+                                        const days = hours / 24;
+                                        return `${Math.floor(days)}d ago`;
+                                    };
+
+                                    if (req.status === 'Approved' || req.status === 'Rejected' || req.status === 'Needs Revision') {
+                                        return (
+                                            <span className={`px-3 py-1 text-base font-semibold rounded-full ${
+                                                req.status === 'Approved' ? 'bg-green-100 text-green-700' : 
+                                                req.status === 'Rejected' ? 'bg-[#fde8e9] text-[#c01823]' : 
+                                                'bg-amber-100 text-amber-700'
+                                            }`}>
+                                                {req.status}
+                                            </span>
+                                        );
+                                    } else {
+                                        const lastEvent = [...req.approvalHistory].reverse().find(h => h.date);
+                                        const pendingSince = lastEvent?.date || req.requestedDate;
+                                        const pendingStep = req.approvalHistory.find(h => h.status === 'Pending');
+                                        
+                                        return (
+                                            <div>
+                                                <p className="font-semibold text-blue-700">{pendingStep?.role || 'Unknown'} Approval Pending</p>
+                                                <p className="text-sm text-gray-500">Waiting for {timeSince(pendingSince)}</p>
+                                            </div>
+                                        );
+                                    }
+                                })()}
                             </div>
                         </div>
                          <div className="col-span-1 px-4 flex items-center justify-center h-full">
@@ -560,18 +640,8 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                     )}
                 </div>
             )}
-
-            <div>
-              <h4 className="font-semibold text-lg text-gray-800 my-4">Approval Workflow</h4>
-              <ApprovalWorkflow
-                stepNames={['HOD', 'Director/Dean', 'HR Review', 'Approved']}
-                currentStepIndex={getApprovalStepIndex(selectedRequisition)}
-                isCompleted={selectedRequisition.status === 'Approved'}
-                isRejected={selectedRequisition.status === 'Rejected' || selectedRequisition.status === 'Needs Revision'}
-                approvalHistory={selectedRequisition.approvalHistory}
-                completionDate={selectedRequisition.completionDate}
-              />
-            </div>
+            
+            <ActivityLog requisition={selectedRequisition} />
           </div>
            {selectedRequisition && (selectedRequisition.status !== 'Approved' && selectedRequisition.status !== 'Rejected' && selectedRequisition.status !== 'Needs Revision') && (
               <div className="flex justify-end pt-6 space-x-3 border-t mt-6">
@@ -609,14 +679,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
             maxWidth="max-w-4xl"
         >
             <div className="p-4">
-                <ApprovalWorkflow
-                    stepNames={['HOD', 'Director/Dean', 'HR Review', 'Approved']}
-                    currentStepIndex={getApprovalStepIndex(requisitionForHistory)}
-                    isCompleted={requisitionForHistory.status === 'Approved'}
-                    isRejected={requisitionForHistory.status === 'Rejected' || requisitionForHistory.status === 'Needs Revision'}
-                    approvalHistory={requisitionForHistory.approvalHistory}
-                    completionDate={requisitionForHistory.completionDate}
-                />
+                <ActivityLog requisition={requisitionForHistory} />
             </div>
         </Modal>
       )}
@@ -748,9 +811,9 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                         <div className="p-6 min-h-[150px]">
                             {selectedJobDescription ? (
                                 <div className="space-y-3 text-base text-gray-700">
-                                    <p><strong className="font-semibold text-gray-800">Qualification:</strong> {selectedJobDescription.qualification.join(', ')}</p>
+                                    <p><strong className="font-semibold text-gray-800">Qualification:</strong> {Array.isArray(selectedJobDescription.qualification) ? selectedJobDescription.qualification.join(', ') : ''}</p>
                                     <p><strong className="font-semibold text-gray-800">Experience:</strong> {selectedJobDescription.experience}</p>
-                                    <p><strong className="font-semibold text-gray-800">Skills:</strong> {selectedJobDescription.skills}</p>
+                                    <p><strong className="font-semibold text-gray-800">Skills:</strong> {Array.isArray(selectedJobDescription.skills) ? selectedJobDescription.skills.join(', ') : ''}</p>
                                 </div>
                             ) : (
                                 <p className="text-base text-gray-500 text-center pt-10">Select a position to view criteria.</p>

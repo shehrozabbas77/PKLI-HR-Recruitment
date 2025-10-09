@@ -1,5 +1,3 @@
-
-
 import type { Step, StaffingPosition, Requisition, Candidate, PanelMember, SelectionBoard, JobDescription, JobAdvertisement } from './types';
 import { PositionStatus } from './types';
 
@@ -331,9 +329,9 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1, 
         status: 'Pending Director/Dean Approval',
         requestedBy: 'Kahfif Siddiqui',
-        requestedDate: '2025-09-18 10:00',
+        requestedDate: new Date('2025-09-18T10:00:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-09-18', approver: 'Mr. Ali' },
+            { role: 'HOD', status: 'Approved', date: new Date('2025-09-18T14:30:00').toISOString(), approver: 'Mr. Ali' },
             { role: 'Director/Dean', status: 'Pending' }
         ],
         justification: 'Replacement for a resigned employee to manage the department\'s key projects and deliverables. This role is crucial for maintaining project timelines and team coordination.',
@@ -360,7 +358,7 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1, 
         status: 'Pending HOD Approval',
         requestedBy: 'Kahfif Siddiqui',
-        requestedDate: '2025-09-15 14:15',
+        requestedDate: new Date('2025-09-15T14:15:00').toISOString(),
         approvalHistory: [
             { role: 'HOD', status: 'Pending' }
         ],
@@ -387,10 +385,10 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1, 
         status: 'Rejected',
         requestedBy: 'Dr. Adnan Gill',
-        requestedDate: '2025-08-20 11:30',
+        requestedDate: new Date('2025-08-20T11:30:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-08-21', approver: 'Dr. Adnan Gill' },
-            { role: 'Director/Dean', status: 'Rejected', date: '2025-08-22', approver: 'Dr. Khan', comments: 'Budget not available for a new manager role this quarter. Re-evaluate in Q4.' }
+            { role: 'HOD', status: 'Approved', date: new Date('2025-08-21T09:00:00').toISOString(), approver: 'Dr. Adnan Gill' },
+            { role: 'Director/Dean', status: 'Rejected', date: new Date('2025-08-22T16:00:00').toISOString(), approver: 'Dr. Khan', comments: 'Budget not available for a new manager role this quarter. Re-evaluate in Q4.' }
         ],
         justification: 'Requesting an additional HR Manager to handle increased workload due to recent expansion and to improve HR service delivery.',
         fiscalYear: '2025-2026',
@@ -415,13 +413,13 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1, 
         status: 'Approved',
         requestedBy: 'Kahfif Siddiqui',
-        requestedDate: '2025-08-10 09:00',
+        requestedDate: new Date('2025-08-10T09:00:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-08-11', approver: 'Mr. Ali' },
-            { role: 'Director/Dean', status: 'Approved', date: '2025-08-12', approver: 'Dr. Khan' },
-            { role: 'HR Review', status: 'Reviewed', date: '2025-08-13', approver: 'HR Team' }
+            { role: 'HOD', status: 'Approved', date: new Date('2025-08-11T11:00:00').toISOString(), approver: 'Mr. Ali' },
+            { role: 'Director/Dean', status: 'Approved', date: new Date('2025-08-12T15:00:00').toISOString(), approver: 'Dr. Khan' },
+            { role: 'HR Review', status: 'Reviewed', date: new Date('2025-08-13T10:00:00').toISOString(), approver: 'HR Team' }
         ],
-        completionDate: '2025-08-13',
+        completionDate: new Date('2025-08-13T10:00:00').toISOString(),
         justification: 'Backfill for a promoted software engineer to maintain development velocity on the patient portal project.',
         fiscalYear: '2025-2026',
         positionType: 'Full-Time',
@@ -446,13 +444,13 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1,
         requestedBy: 'Mr. Ahmed',
         status: 'Approved',
-        requestedDate: '2025-10-11 15:00',
+        requestedDate: new Date('2025-10-11T15:00:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-10-12', approver: 'Mr. Ahmed' },
-            { role: 'Director/Dean', status: 'Approved', date: '2025-10-13', approver: 'Dr. Khan' },
-            { role: 'HR Review', status: 'Reviewed', date: '2025-10-14', approver: 'HR Team' }
+            { role: 'HOD', status: 'Approved', date: new Date('2025-10-12T10:00:00').toISOString(), approver: 'Mr. Ahmed' },
+            { role: 'Director/Dean', status: 'Approved', date: new Date('2025-10-13T12:00:00').toISOString(), approver: 'Dr. Khan' },
+            { role: 'HR Review', status: 'Reviewed', date: new Date('2025-10-14T11:00:00').toISOString(), approver: 'HR Team' }
         ],
-        completionDate: '2025-10-14',
+        completionDate: new Date('2025-10-14T11:00:00').toISOString(),
         jobDescription: 'Internal JD #6',
         fiscalYear: '2025-2026',
         positionType: 'Full-Time',
@@ -478,13 +476,13 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 3,
         status: 'Approved',
         requestedBy: 'Dr. Ahmad',
-        requestedDate: '2025-11-20 10:00',
+        requestedDate: new Date('2025-11-20T10:00:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-11-20', approver: 'Dr. Ahmad' },
-            { role: 'Director/Dean', status: 'Approved', date: '2025-11-21', approver: 'Dr. Khan' },
-            { role: 'HR Review', status: 'Reviewed', date: '2025-11-22', approver: 'HR Team' }
+            { role: 'HOD', status: 'Approved', date: new Date('2025-11-20T14:00:00').toISOString(), approver: 'Dr. Ahmad' },
+            { role: 'Director/Dean', status: 'Approved', date: new Date('2025-11-21T11:00:00').toISOString(), approver: 'Dr. Khan' },
+            { role: 'HR Review', status: 'Reviewed', date: new Date('2025-11-22T13:00:00').toISOString(), approver: 'HR Team' }
         ],
-        completionDate: '2025-11-22',
+        completionDate: new Date('2025-11-22T13:00:00').toISOString(),
         justification: 'Expanding the nephrology department to meet patient demand.',
         fiscalYear: '2025-2026',
         positionType: 'Full-Time',
@@ -508,13 +506,13 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 5, 
         status: 'Approved',
         requestedBy: 'Nursing Director',
-        requestedDate: '2025-10-05 09:00',
+        requestedDate: new Date('2025-10-05T09:00:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-10-05', approver: 'Nursing Director' },
-            { role: 'Director/Dean', status: 'Approved', date: '2025-10-06', approver: 'Medical Director' },
-            { role: 'HR Review', status: 'Reviewed', date: '2025-10-07', approver: 'HR Team' }
+            { role: 'HOD', status: 'Approved', date: new Date('2025-10-05T13:00:00').toISOString(), approver: 'Nursing Director' },
+            { role: 'Director/Dean', status: 'Approved', date: new Date('2025-10-06T10:00:00').toISOString(), approver: 'Medical Director' },
+            { role: 'HR Review', status: 'Reviewed', date: new Date('2025-10-07T14:00:00').toISOString(), approver: 'HR Team' }
         ],
-        completionDate: '2025-10-07',
+        completionDate: new Date('2025-10-07T14:00:00').toISOString(),
         justification: 'Bulk hiring to manage high turnover rate in nursing staff and maintain patient care standards.',
         fiscalYear: '2025-2026',
         positionType: 'Full-Time',
@@ -539,7 +537,7 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1,
         status: 'Pending HOD Approval',
         requestedBy: 'Mr. Kamran',
-        requestedDate: '2025-11-25 12:00',
+        requestedDate: new Date('2025-11-25T12:00:00').toISOString(),
         approvalHistory: [
             { role: 'HOD', status: 'Pending' }
         ],
@@ -567,13 +565,13 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 2,
         status: 'Approved',
         requestedBy: 'Nursing Director',
-        requestedDate: '2025-11-10 11:00',
+        requestedDate: new Date('2025-11-10T11:00:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-11-10', approver: 'Nursing Director' },
-            { role: 'Director/Dean', status: 'Approved', date: '2025-11-11', approver: 'Medical Director' },
-            { role: 'HR Review', status: 'Reviewed', date: '2025-11-12', approver: 'HR Team' }
+            { role: 'HOD', status: 'Approved', date: new Date('2025-11-10T15:00:00').toISOString(), approver: 'Nursing Director' },
+            { role: 'Director/Dean', status: 'Approved', date: new Date('2025-11-11T12:00:00').toISOString(), approver: 'Medical Director' },
+            { role: 'HR Review', status: 'Reviewed', date: new Date('2025-11-12T16:00:00').toISOString(), approver: 'HR Team' }
         ],
-        completionDate: '2025-11-12',
+        completionDate: new Date('2025-11-12T16:00:00').toISOString(),
         justification: 'Filling two vacant positions for Charge Nurse to ensure proper shift coverage.',
         fiscalYear: '2025-2026',
         positionType: 'Full-Time',
@@ -598,10 +596,10 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1,
         status: 'Pending HR Review',
         requestedBy: 'Kahfif Siddiqui',
-        requestedDate: '2025-10-28 16:00',
+        requestedDate: new Date('2025-10-28T16:00:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-10-29', approver: 'Mr. Ali' },
-            { role: 'Director/Dean', status: 'Approved', date: '2025-10-30', approver: 'Dr. Khan' },
+            { role: 'HOD', status: 'Approved', date: new Date('2025-10-29T10:00:00').toISOString(), approver: 'Mr. Ali' },
+            { role: 'Director/Dean', status: 'Approved', date: new Date('2025-10-30T11:00:00').toISOString(), approver: 'Dr. Khan' },
             { role: 'HR Review', status: 'Pending' }
         ],
         justification: 'New position required to support the expanding network infrastructure and reduce downtime.',
@@ -627,10 +625,10 @@ export const mockRequisitions: Requisition[] = [
         numberOfPositions: 1,
         status: 'Needs Revision',
         requestedBy: 'Mr. Ahmed',
-        requestedDate: '2025-11-15 09:30',
+        requestedDate: new Date('2025-11-15T09:30:00').toISOString(),
         approvalHistory: [
-            { role: 'HOD', status: 'Approved', date: '2025-11-15', approver: 'Mr. Ahmed' },
-            { role: 'Director/Dean', status: 'Rejected', date: '2025-11-16', approver: 'Dr. Khan', comments: 'Justification is not strong enough. Please provide more details on workload.' }
+            { role: 'HOD', status: 'Approved', date: new Date('2025-11-15T11:00:00').toISOString(), approver: 'Mr. Ahmed' },
+            { role: 'Director/Dean', status: 'Rejected', date: new Date('2025-11-16T14:00:00').toISOString(), approver: 'Dr. Khan', comments: 'Justification is not strong enough. Please provide more details on workload.' }
         ],
         justification: 'Replacement for a resigned employee.',
         fiscalYear: '2025-2026',

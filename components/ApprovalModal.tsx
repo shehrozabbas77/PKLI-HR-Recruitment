@@ -23,6 +23,13 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, o
     year: 'numeric'
   });
 
+  const getButtonText = () => {
+    if (action === 'approve') return 'Confirm Approval';
+    if (action === 'return') return 'Return for Revision';
+    if (action === 'reject') return 'Confirm Rejection';
+    return 'Confirm'; // Fallback
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-4">
@@ -67,7 +74,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, o
                 : 'bg-amber-500 hover:bg-amber-600'
           }`}
         >
-          {action === 'approve' ? 'Confirm Approval' : action === 'reject' ? 'Confirm Rejection' : 'Confirm Return'}
+          {getButtonText()}
         </button>
       </div>
     </Modal>
