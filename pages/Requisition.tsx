@@ -4,7 +4,7 @@ import { Card, CardContent } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { ApprovalWorkflow } from '../components/ApprovalWorkflow';
 import { ApprovalModal } from '../components/ApprovalModal';
-import { UserIcon, BuildingIcon, BriefcaseIcon, CheckIcon, XIcon, FilePlusIcon } from '../components/icons';
+import { UserIcon, BuildingIcon, BriefcaseIcon, CheckIcon, XIcon, FilePlusIcon, HistoryIcon } from '../components/icons';
 import { departmentSections } from '../constants';
 
 interface RequisitionProps {
@@ -118,6 +118,9 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
   const [sectionFilter, setSectionFilter] = useState('All Sections');
   const [positionFilter, setPositionFilter] = useState('All Positions');
   const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [requisitionForHistory, setRequisitionForHistory] = useState<Requisition | null>(null);
+
 
   const approvedJobDescriptions = jobDescriptions.filter(jd => jd.status === 'Approved');
 
@@ -183,6 +186,12 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
   const handleViewDetails = (requisition: Requisition) => {
     setSelectedRequisition(requisition);
     setIsDetailsModalOpen(true);
+  };
+  
+  const handleViewHistory = (e: React.MouseEvent, requisition: Requisition) => {
+    e.stopPropagation();
+    setRequisitionForHistory(requisition);
+    setIsHistoryModalOpen(true);
   };
 
   const handleOpenCreateModal = () => {
@@ -360,7 +369,9 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
     setApprovalAction(null);
   };
 
-  const getApprovalStepIndex = (status: RequisitionStatus) => {
+  const getApprovalStepIndex = (requisition: Requisition | null) => {
+    if (!requisition) return -1;
+    const { status, approvalHistory } = requisition;
     switch (status) {
         case 'Pending HOD Approval': return 0;
         case 'Pending Director/Dean Approval': return 1;
@@ -368,12 +379,12 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
         case 'Approved': return 3;
         case 'Rejected':
         case 'Needs Revision': {
-            const history = selectedRequisition?.approvalHistory || [];
+            const history = approvalHistory || [];
             const rejectedStep = history.find(s => s.status === 'Rejected');
             if (rejectedStep?.role.includes('HOD')) return 0;
             if (rejectedStep?.role.includes('Director')) return 1;
             if (rejectedStep?.role.includes('HR')) return 2;
-            return history.length > 0 ? history.length -1 : 0;
+            return history.length > 0 ? history.length - 1 : 0;
         }
         default: return -1;
     }
@@ -453,34 +464,46 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="px-6 py-4 grid grid-cols-12 items-center text-sm text-gray-500 uppercase font-bold tracking-wider border-b bg-gray-50">
                 <div className="col-span-3">Position / Dept</div>
-                <div className="col-span-5 px-4">Request Details</div>
+                <div className="col-span-4 px-4">Request Details</div>
                 <div className="col-span-4 px-4">Status</div>
+                <div className="col-span-1 px-4 text-center">Actions</div>
             </div>
             <div>
                 {filteredRequisitions.length > 0 ? filteredRequisitions.map(req => (
-                    <div key={req.id} className="px-6 py-6 grid grid-cols-12 items-start hover:bg-gray-50 cursor-pointer border-b" onClick={() => handleViewDetails(req)}>
-                        <div className="col-span-3 pr-4">
-                            <p className="font-extrabold text-xl text-gray-800">{req.position}</p>
-                            <p className="text-base text-gray-600">{req.department} / {req.section}</p>
-                            <p className="text-sm text-gray-500 mt-1">Req ID: {req.reqId}</p>
+                    <div key={req.id} className="grid grid-cols-12 items-start hover:bg-gray-50 border-b">
+                        <div className="col-span-11 grid grid-cols-11 cursor-pointer" onClick={() => handleViewDetails(req)}>
+                            <div className="col-span-3 pr-4 py-6 px-6">
+                                <p className="font-extrabold text-xl text-gray-800">{req.position}</p>
+                                <p className="text-base text-gray-600">{req.department} / {req.section}</p>
+                                <p className="text-sm text-gray-500 mt-1">Req ID: {req.reqId}</p>
+                            </div>
+                            <div className="col-span-4 px-4 min-w-0 py-6">
+                                <p className="font-bold text-base text-gray-800">{req.numberOfPositions} Position(s) - {req.positionType}</p>
+                                <p className="text-sm text-gray-600">Requested by {req.requestedBy} on {new Date(req.requestedDate).toLocaleDateString('en-CA')}</p>
+                                <p className="text-sm text-gray-600 italic mt-1 truncate" title={req.justification}>"{req.justification}"</p>
+                            </div>
+                            <div className="col-span-4 px-4 py-6">
+                                {activeTab === 'approved' || req.status === 'Rejected' || req.status === 'Needs Revision' ? (
+                                     <span className={`px-3 py-1 text-base font-semibold rounded-full ${
+                                         req.status === 'Approved' ? 'bg-green-100 text-green-700' : 
+                                         req.status === 'Rejected' ? 'bg-[#fde8e9] text-[#c01823]' : 
+                                         'bg-amber-100 text-amber-700'
+                                     }`}>
+                                        {req.status}
+                                    </span>
+                                ) : (
+                                    <CompactApprovalWorkflow status={req.status} history={req.approvalHistory} />
+                                )}
+                            </div>
                         </div>
-                        <div className="col-span-5 px-4 min-w-0">
-                            <p className="font-bold text-base text-gray-800">{req.numberOfPositions} Position(s) - {req.positionType}</p>
-                            <p className="text-sm text-gray-600">Requested by {req.requestedBy} on {new Date(req.requestedDate).toLocaleDateString('en-CA')}</p>
-                            <p className="text-sm text-gray-600 italic mt-1 truncate" title={req.justification}>"{req.justification}"</p>
-                        </div>
-                        <div className="col-span-4 px-4">
-                            {activeTab === 'approved' || req.status === 'Rejected' || req.status === 'Needs Revision' ? (
-                                 <span className={`px-3 py-1 text-base font-semibold rounded-full ${
-                                     req.status === 'Approved' ? 'bg-green-100 text-green-700' : 
-                                     req.status === 'Rejected' ? 'bg-[#fde8e9] text-[#c01823]' : 
-                                     'bg-amber-100 text-amber-700'
-                                 }`}>
-                                    {req.status}
-                                </span>
-                            ) : (
-                                <CompactApprovalWorkflow status={req.status} history={req.approvalHistory} />
-                            )}
+                         <div className="col-span-1 px-4 flex items-center justify-center h-full">
+                            <button
+                                onClick={(e) => handleViewHistory(e, req)}
+                                className="text-slate-500 hover:text-indigo-600 p-2 rounded-full transition-colors"
+                                title="View Approval History"
+                            >
+                                <HistoryIcon className="w-6 h-6" />
+                            </button>
                         </div>
                     </div>
                 )) : (
@@ -542,7 +565,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
               <h4 className="font-semibold text-lg text-gray-800 my-4">Approval Workflow</h4>
               <ApprovalWorkflow
                 stepNames={['HOD', 'Director/Dean', 'HR Review', 'Approved']}
-                currentStepIndex={getApprovalStepIndex(selectedRequisition.status)}
+                currentStepIndex={getApprovalStepIndex(selectedRequisition)}
                 isCompleted={selectedRequisition.status === 'Approved'}
                 isRejected={selectedRequisition.status === 'Rejected' || selectedRequisition.status === 'Needs Revision'}
                 approvalHistory={selectedRequisition.approvalHistory}
@@ -575,6 +598,26 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                   </button>
               </div>
           )}
+        </Modal>
+      )}
+
+      {requisitionForHistory && (
+        <Modal
+            isOpen={isHistoryModalOpen}
+            onClose={() => setIsHistoryModalOpen(false)}
+            title={`Approval History for ${requisitionForHistory.reqId}`}
+            maxWidth="max-w-4xl"
+        >
+            <div className="p-4">
+                <ApprovalWorkflow
+                    stepNames={['HOD', 'Director/Dean', 'HR Review', 'Approved']}
+                    currentStepIndex={getApprovalStepIndex(requisitionForHistory)}
+                    isCompleted={requisitionForHistory.status === 'Approved'}
+                    isRejected={requisitionForHistory.status === 'Rejected' || requisitionForHistory.status === 'Needs Revision'}
+                    approvalHistory={requisitionForHistory.approvalHistory}
+                    completionDate={requisitionForHistory.completionDate}
+                />
+            </div>
         </Modal>
       )}
       

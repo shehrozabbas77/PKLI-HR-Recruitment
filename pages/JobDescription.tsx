@@ -1,11 +1,12 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import type { JobDescription, JobDescriptionStatus, StaffingPosition } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { ApprovalWorkflow } from '../components/ApprovalWorkflow';
 import { ApprovalModal } from '../components/ApprovalModal';
-import { departmentSections } from '../constants';
-import { XIcon, DocumentTextIcon, CheckIcon, EyeIcon, EditIcon } from '../components/icons';
+import { departmentSections, departmentSupervisors } from '../constants';
+import { XIcon, DocumentTextIcon, CheckIcon, EyeIcon, EditIcon, HistoryIcon } from '../components/icons';
 
 interface JobDescriptionPageProps {
   jobDescriptions: JobDescription[];
@@ -33,7 +34,7 @@ const initialJdFormData = {
     registrationLicense: [] as string[],
     jobSummary: '',
     jobFunctions: '',
-    preparedBy: '',
+    preparedBy: departmentSupervisors['ICT'] || '',
 };
 
 const FormSection: React.FC<{ title: string, icon?: React.ReactNode, children: React.ReactNode }> = ({ title, icon, children }) => (
@@ -62,15 +63,22 @@ const DetailItem: React.FC<{ label: string, value: string | string[] | React.Rea
 const TimelineEvents: React.FC<{ jd: JobDescription }> = ({ jd }) => {
     const events = jd.approvalHistory
         .filter(s => s.status !== 'Pending' && s.date)
-        .map(s => ({
-            title: s.role.replace(/ *\([^)]*\) */g, ""), // Remove text in parentheses
-            status: s.status,
-            date: new Date(s.date!).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-        }));
+        .map(s => {
+            const match = s.role.match(/\(([^)]+)\)/);
+            const designation = match ? match[1] : s.status;
+            return {
+                title: s.role.replace(/ *\([^)]*\) */g, ""), // Remove text in parentheses
+                status: s.status,
+                designation: designation,
+                date: new Date(s.date!).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            };
+        });
+        
     if (jd.status === 'Approved') {
         const lastEvent = events[events.length - 1];
         if (lastEvent) {
-             events.push({ title: 'Finalized', status: 'Approved', date: lastEvent.date });
+             // For the synthetic 'Finalized' event, the designation can be the status itself.
+             events.push({ title: 'Finalized', status: 'Approved', designation: 'Approved', date: lastEvent.date });
         }
     }
     
@@ -81,7 +89,7 @@ const TimelineEvents: React.FC<{ jd: JobDescription }> = ({ jd }) => {
                 {events.map((event, i) => (
                     <div key={i} className="flex-shrink-0">
                         <p className="text-sm font-bold text-gray-700">{event.title}</p>
-                        <p className={`text-xs font-semibold ${event.status === 'Rejected' ? 'text-red-600' : 'text-green-600'}`}>{event.status}</p>
+                        <p className={`text-xs font-semibold ${event.status === 'Rejected' ? 'text-red-600' : 'text-green-600'}`}>{event.designation}</p>
                         <p className="text-xs text-gray-500">{event.date}</p>
                     </div>
                 ))}
@@ -169,6 +177,7 @@ const MultiSelectDropdown: React.FC<{
 const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions, setJobDescriptions, staffingPlan }) => {
   const [selectedJd, setSelectedJd] = useState<JobDescription | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newJdData, setNewJdData] = useState(initialJdFormData);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
@@ -219,6 +228,12 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
   const handleViewDetails = (jd: JobDescription) => {
     setSelectedJd(jd);
     setIsDetailsModalOpen(true);
+  };
+
+  const handleViewHistory = (e: React.MouseEvent, jd: JobDescription) => {
+    e.stopPropagation();
+    setSelectedJd(jd);
+    setIsHistoryModalOpen(true);
   };
   
   const handleOpenCreateModal = () => {
@@ -302,8 +317,14 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
   const handleJdInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name === 'department') {
-        // Reset section and designation when department changes
-        setNewJdData(prev => ({ ...prev, department: value, section: '', designation: '' }));
+        const supervisor = departmentSupervisors[value] || '';
+        setNewJdData(prev => ({
+            ...prev,
+            department: value,
+            section: '',
+            designation: '',
+            preparedBy: supervisor,
+        }));
     } else {
         setNewJdData(prev => ({ ...prev, [name]: value }));
     }
@@ -468,6 +489,13 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                         >
                             <EyeIcon className="w-6 h-6" />
                         </button>
+                         <button
+                            onClick={(e) => handleViewHistory(e, jd)}
+                            className="text-gray-500 hover:text-indigo-600 p-1 rounded-full transition-colors inline-block"
+                            title="View Approval History"
+                        >
+                            <HistoryIcon className="w-6 h-6" />
+                        </button>
                         {['Pending HOD Approval', 'Needs Revision', 'Rejected'].includes(jd.status) && (
                             <button
                                 onClick={(e) => handleEditClick(e, jd)}
@@ -569,6 +597,28 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
           )}
         </Modal>
       )}
+
+       {selectedJd && (
+            <Modal
+                isOpen={isHistoryModalOpen}
+                onClose={() => setIsHistoryModalOpen(false)}
+                title={`Approval History for ${selectedJd.designation}`}
+                maxWidth="max-w-3xl"
+            >
+                <div className="p-4">
+                    <TimelineEvents jd={selectedJd} />
+                    <div className="mt-6">
+                        <ApprovalWorkflow 
+                            stepNames={['Supervisor/Line Manager', 'HOD/Divisional Head', 'HR', 'Completed']}
+                            currentStepIndex={getApprovalStepIndex(selectedJd.status, selectedJd.approvalHistory)}
+                            isCompleted={selectedJd.status === 'Approved'}
+                            isRejected={selectedJd.status === 'Rejected' || selectedJd.status === 'Needs Revision'}
+                            approvalHistory={selectedJd.approvalHistory}
+                        />
+                    </div>
+                </div>
+            </Modal>
+        )}
       
       <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title={editingJd ? `Edit JD: ${editingJd.designation}` : "Create New Job Description"} maxWidth="max-w-6xl">
         <form onSubmit={handleJdSubmit}>
@@ -649,7 +699,15 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                     <h3 className="text-lg font-semibold text-blue-700 border-b pb-2 mb-6">Preparation Details</h3>
                     <div>
                         <label htmlFor="preparedBy" className="block text-sm font-medium text-gray-700">Prepared By (Supervisor/Line Manager)</label>
-                        <input type="text" name="preparedBy" id="preparedBy" value={newJdData.preparedBy} onChange={handleJdInputChange} required className="mt-1 w-full max-w-sm bg-white border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-base px-3 py-2" />
+                        <input 
+                            type="text" 
+                            name="preparedBy" 
+                            id="preparedBy" 
+                            value={newJdData.preparedBy} 
+                            required 
+                            readOnly
+                            className="mt-1 w-full max-w-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm text-gray-500 focus:ring-0 focus:border-gray-300 text-base px-3 py-2 cursor-not-allowed" 
+                        />
                     </div>
                 </div>
 

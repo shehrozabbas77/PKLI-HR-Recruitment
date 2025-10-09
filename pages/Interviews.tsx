@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { Candidate, PanelMember, SelectionBoard, InterviewStatus, PanelEvaluation, PanelMemberStatus, Notification, JobAdvertisement, Requisition, CandidateStatus } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -481,6 +480,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
   const [isBulkScheduleModalOpen, setIsBulkScheduleModalOpen] = useState(false);
   const [bulkScheduleStartTime, setBulkScheduleStartTime] = useState('');
   const [bulkNominationJobTitle, setBulkNominationJobTitle] = useState<string | null>(null);
+  const [editingTimeId, setEditingTimeId] = useState<number | null>(null);
   
   const candidatesForScheduling = useMemo(() => 
     candidates.filter(c => c.status === 'Shortlisted for Interview')
@@ -827,13 +827,48 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                                       {candidate.interviewPanel.map(p => p.name).join(', ') || 'Panel Not Nominated'}
                                   </td>
                                   <td className="px-6 py-4">
-                                      <input 
-                                          type="datetime-local" 
-                                          value={candidate.interviewTime ? new Date(new Date(candidate.interviewTime).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().substring(0, 16) : ''}
-                                          onChange={(e) => handleSetInterviewTime(candidate.id, new Date(e.target.value).toISOString())}
-                                          disabled={isScheduled}
-                                          className="text-sm border-gray-300 rounded-md shadow-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                      />
+                                    {editingTimeId === candidate.id ? (
+                                        <input 
+                                            type="datetime-local" 
+                                            defaultValue={candidate.interviewTime ? new Date(new Date(candidate.interviewTime).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().substring(0, 16) : ''}
+                                            onBlur={(e) => {
+                                                const newTime = e.target.value;
+                                                if (newTime) {
+                                                    handleSetInterviewTime(candidate.id, new Date(newTime).toISOString());
+                                                } else {
+                                                    setCandidates(prev => prev.map(c => 
+                                                        c.id === candidate.id 
+                                                        ? { ...c, interviewTime: undefined, interviewStatus: 'Pending Schedule' } 
+                                                        : c
+                                                    ));
+                                                }
+                                                setEditingTimeId(null);
+                                            }}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                                            autoFocus
+                                            className="text-sm border-gray-300 rounded-md shadow-sm"
+                                        />
+                                    ) : isScheduled && candidate.interviewTime ? (
+                                        <div className="flex items-center justify-between min-h-[42px]">
+                                            <span className="text-gray-800">{new Date(candidate.interviewTime).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                            {candidate.interviewStatus === 'Scheduled' && (
+                                                 <button 
+                                                    onClick={() => setEditingTimeId(candidate.id)} 
+                                                    className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-100 transition-opacity"
+                                                    title="Edit time"
+                                                >
+                                                    <EditIcon className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <input 
+                                            type="datetime-local" 
+                                            value={''}
+                                            onChange={(e) => e.target.value && handleSetInterviewTime(candidate.id, new Date(e.target.value).toISOString())}
+                                            className="text-sm border-gray-300 rounded-md shadow-sm"
+                                        />
+                                    )}
                                   </td>
                                   <td className="px-6 py-4">
                                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${

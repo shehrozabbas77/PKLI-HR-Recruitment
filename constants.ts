@@ -72,6 +72,14 @@ export const departmentSections: { [key: string]: string[] } = {
     'Human Resource': ['Operations', 'Talent Acquisition', 'Compensation & Benefits']
 };
 
+export const departmentSupervisors: { [key: string]: string } = {
+    'ICT': 'Mr. Ali (CIO)',
+    'Medical Services': 'Dr. Ahmad (Supervisor)',
+    'Administration': 'Admin Manager',
+    'Finance': 'CFO',
+    'Human Resource': 'Director HR'
+};
+
 export const mockStaffingPlan: StaffingPosition[] = [
     // ICT Department
     { id: 2, department: 'ICT', section: 'Management', designation: 'Senior Manager', minSalary: 250000, maxSalary: 350000, weightedAvgSalary: 275000, positions2526: 2, onBoard: 1, vacant: 1, positions2627: 2, remarks: '1 Vacancy', status: PositionStatus.Normal },

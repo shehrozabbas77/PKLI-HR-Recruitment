@@ -136,9 +136,13 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
 
     const handleRejectConfirm = (remarks: string) => {
         if (!candidateToReject) return;
+        const finalRemarks = stage === 'department-review' 
+            ? `Not recommended by department: ${remarks}` 
+            : remarks;
+
         setCandidates(prev => prev.map(c => 
             c.id === candidateToReject.id 
-            ? { ...c, status: 'Rejected', rejectionRemarks: remarks }
+            ? { ...c, status: 'Rejected', rejectionRemarks: finalRemarks }
             : c
         ));
         setIsRejectModalOpen(false);
@@ -543,7 +547,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                         <td className="px-6 py-4">{ad?.deadline || 'N/A'}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2 py-1 text-sm font-medium rounded-full ${statusColorMap[candidate.status]}`}>
-                                                {candidate.status}
+                                                {stage === 'department-review' && candidate.status === 'Sent to Department' ? 'Pending Review' : candidate.status}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center space-x-2">
