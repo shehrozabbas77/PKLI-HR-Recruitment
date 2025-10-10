@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Candidate, CandidateStatus, JobAdvertisement } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
 import { Modal } from '../components/Modal';
-import { ApplicationIcon, ScreenIcon } from '../components/icons';
+import { ApplicationIcon, ScreenIcon, PrinterIcon, CheckIcon } from '../components/icons';
 import { RejectModal } from '../components/RejectModal';
 import { ShortlistModal } from '../components/ShortlistModal';
 
@@ -73,6 +73,61 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
     const [selectedAdId, setSelectedAdId] = useState<number | null>(null);
     const [dataFetchedForAd, setDataFetchedForAd] = useState<number | null>(null);
     const headerCheckboxRef = useRef<HTMLInputElement>(null);
+
+    // State for the new summary tab in 'final-shortlisting'
+    const [finalShortlistingTab, setFinalShortlistingTab] = useState<'review' | 'summary'>('review');
+    const [summaryDepartmentFilter, setSummaryDepartmentFilter] = useState('All');
+    const [summarySectionFilter, setSummarySectionFilter] = useState('All');
+    const [summaryPositionFilter, setSummaryPositionFilter] = useState('All');
+    const [showSentConfirmation, setShowSentConfirmation] = useState(false);
+    
+    const summaryCandidates = useMemo(() => candidates.filter(c => 
+        c.status === 'Recommended by Department' ||
+        c.status === 'Shortlisted for Interview' || 
+        (c.status === 'Rejected' && !c.rejectionRemarks?.includes('department'))
+    ), [candidates]);
+
+    const summaryDepartments = useMemo(() => {
+        return ['All', ...Array.from(new Set(summaryCandidates.map(c => c.department)))];
+    }, [summaryCandidates]);
+
+    const summarySections = useMemo(() => {
+        if (summaryDepartmentFilter === 'All') return ['All'];
+        const relevantCandidates = summaryCandidates.filter(c => c.department === summaryDepartmentFilter);
+        return ['All', ...Array.from(new Set(relevantCandidates.map(c => c.section)))];
+    }, [summaryCandidates, summaryDepartmentFilter]);
+
+    const summaryPositions = useMemo(() => {
+        let relevantCandidates = summaryCandidates;
+        if (summaryDepartmentFilter !== 'All') {
+            relevantCandidates = relevantCandidates.filter(c => c.department === summaryDepartmentFilter);
+        }
+        if (summarySectionFilter !== 'All') {
+            relevantCandidates = relevantCandidates.filter(c => c.section === summarySectionFilter);
+        }
+        return ['All', ...Array.from(new Set(relevantCandidates.map(c => c.positionAppliedFor)))];
+    }, [summaryCandidates, summaryDepartmentFilter, summarySectionFilter]);
+
+    const filteredSummaryList = useMemo(() =>
+        summaryCandidates.filter(c =>
+            (summaryDepartmentFilter === 'All' || c.department === summaryDepartmentFilter) &&
+            (summarySectionFilter === 'All' || c.section === summarySectionFilter) &&
+            (summaryPositionFilter === 'All' || c.positionAppliedFor === summaryPositionFilter)
+        ),
+        [summaryCandidates, summaryDepartmentFilter, summarySectionFilter, summaryPositionFilter]
+    );
+
+    useEffect(() => { setSummarySectionFilter('All'); }, [summaryDepartmentFilter]);
+    useEffect(() => { setSummaryPositionFilter('All'); }, [summarySectionFilter]);
+
+    const handleSendSummary = () => {
+        setShowSentConfirmation(true);
+    };
+
+    const handleConfirmSend = () => {
+        setShowSentConfirmation(false);
+        setTimeout(() => window.print(), 300); // Give modal time to close
+    }
 
     const handleGetData = () => {
         if (!selectedAdId) return;
@@ -450,134 +505,349 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
 
     return (
         <>
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-start">
+            <style>{`
+                #summary-table-container .no-print-action { display: table-cell; }
+                .print-only { display: none; }
+                @media print {
+                    body > #root > div > header, 
+                    body > #root > div > footer,
+                    main > .mb-8,
+                    .no-print {
+                        display: none !important;
+                    }
+                    main {
+                        padding: 1rem !important;
+                        margin: 0 !important;
+                    }
+                    #applications-card {
+                        box-shadow: none !important;
+                        border: none !important;
+                    }
+                    .print-only {
+                        display: block !important;
+                    }
+                    #summary-table-container .no-print-action {
+                        display: none !important;
+                    }
+                    #summary-table-container table {
+                        font-size: 10px;
+                    }
+                    #summary-table-container th, 
+                    #summary-table-container td {
+                        padding: 4px 8px !important;
+                    }
+                }
+            `}</style>
+            <Card id="applications-card">
+                <CardHeader className="no-print">
+                    {stage === 'collection' && !dataFetchedForAd ? (
                         <div>
-                             {stage === 'collection' && dataFetchedForAd && (
-                                <button onClick={() => { setDataFetchedForAd(null); setSelectedAdId(null); }} className="text-sm font-semibold text-blue-600 hover:text-blue-800 mb-2 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                                    Select Another Advertisement
-                                </button>
-                            )}
-                            <CardTitle>{config.title}</CardTitle>
-                            <CardDescription>
-                                {stage === 'collection' && dataFetchedForAd ? `Displaying applicants for "${advertisements.find(a => a.id === dataFetchedForAd)?.title}"` : config.description}
-                            </CardDescription>
+                            <CardTitle>Fetch Applicant Data</CardTitle>
+                            <CardDescription>No data source selected.</CardDescription>
                         </div>
-                        <div className="flex items-center space-x-2 flex-wrap justify-end">
-                            {config.filters.map(option => (
-                                <button 
-                                    key={option} 
-                                    onClick={() => setFilter(option)}
-                                    className={`px-3 py-1 text-base font-medium rounded-md whitespace-nowrap ${filter === option ? 'bg-[#0076b6] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-                                >
-                                    {option}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    {(stage === 'collection' || stage === 'department-review' || stage === 'final-shortlisting') && (
-                        <div className="border-t mt-4 pt-4">
-                           {renderFilterControls}
-                            {stage === 'collection' && (
-                                <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
-                                    <button onClick={handleSendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-[#0076b6] rounded-md hover:bg-[#005a8c] disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                        Send Selected ({selectedCandidateIds.length}) to Department
-                                    </button>
+                    ) : (
+                        <>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    {stage === 'collection' && dataFetchedForAd && (
+                                        <button onClick={() => { setDataFetchedForAd(null); setSelectedAdId(null); }} className="text-sm font-semibold text-blue-600 hover:text-blue-800 mb-2 flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                                            Select Another Advertisement
+                                        </button>
+                                    )}
+                                    <CardTitle>{config.title}</CardTitle>
+                                    <CardDescription>
+                                        {stage === 'collection' && dataFetchedForAd ? `Displaying applicants for "${advertisements.find(a => a.id === dataFetchedForAd)?.title}"` : config.description}
+                                    </CardDescription>
+                                </div>
+                                 {(stage !== 'final-shortlisting' || (stage === 'final-shortlisting' && finalShortlistingTab === 'review')) && (
+                                    <div className="flex items-center space-x-2 flex-wrap justify-end">
+                                        {config.filters.map(option => (
+                                            <button 
+                                                key={option} 
+                                                onClick={() => setFilter(option)}
+                                                className={`px-3 py-1 text-base font-medium rounded-md whitespace-nowrap ${filter === option ? 'bg-[#0076b6] text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            
+                             {stage === 'final-shortlisting' && (
+                                <div className="mt-4 border-b border-gray-200">
+                                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                                        <button
+                                            onClick={() => setFinalShortlistingTab('review')}
+                                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base ${finalShortlistingTab === 'review' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                                        >
+                                            Candidate Review
+                                        </button>
+                                        <button
+                                            onClick={() => setFinalShortlistingTab('summary')}
+                                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base ${finalShortlistingTab === 'summary' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                                        >
+                                            Summary
+                                        </button>
+                                    </nav>
                                 </div>
                             )}
-                            {stage === 'department-review' && (
-                                <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
-                                    <button onClick={handleRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                        Recommend Selected ({selectedCandidateIds.length})
-                                    </button>
-                                    <button onClick={handleDontRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                        Don't Recommend Selected ({selectedCandidateIds.length})
-                                    </button>
+
+                            {(stage === 'collection' || stage === 'department-review' || (stage === 'final-shortlisting' && finalShortlistingTab === 'review')) && (
+                                <div className="border-t mt-4 pt-4">
+                                {renderFilterControls}
+                                    {stage === 'collection' && (
+                                        <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
+                                            <button onClick={handleSendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-[#0076b6] rounded-md hover:bg-[#005a8c] disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                Send Selected ({selectedCandidateIds.length}) to Department
+                                            </button>
+                                        </div>
+                                    )}
+                                    {stage === 'department-review' && (
+                                        <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
+                                            <button onClick={handleRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                Recommend Selected ({selectedCandidateIds.length})
+                                            </button>
+                                            <button onClick={handleDontRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                Don't Recommend Selected ({selectedCandidateIds.length})
+                                            </button>
+                                        </div>
+                                    )}
+                                    {stage === 'final-shortlisting' && (
+                                        <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
+                                            <button onClick={handleShortlistSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                Shortlist Selected ({selectedCandidateIds.length})
+                                            </button>
+                                            <button onClick={handleRejectSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-[#c01823] rounded-md hover:bg-[#9a131c] disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                Reject Selected ({selectedCandidateIds.length})
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                            {stage === 'final-shortlisting' && (
-                                <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
-                                    <button onClick={handleShortlistSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                        Shortlist Selected ({selectedCandidateIds.length})
-                                    </button>
-                                    <button onClick={handleRejectSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-[#c01823] rounded-md hover:bg-[#9a131c] disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                        Reject Selected ({selectedCandidateIds.length})
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        </>
                     )}
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-base text-left text-gray-600">
-                            <thead className="text-sm text-gray-700 uppercase bg-gray-50">
-                                <tr>
-                                    {(stage === 'collection' || stage === 'department-review' || stage === 'final-shortlisting') && (
-                                        <th scope="col" className="px-6 py-3 w-12">
-                                            <input
-                                                type="checkbox"
-                                                ref={headerCheckboxRef}
-                                                onChange={handleSelectAll}
-                                                disabled={selectableCandidates.length === 0}
-                                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                            />
-                                        </th>
-                                    )}
-                                    <th scope="col" className="px-6 py-3">Name</th>
-                                    <th scope="col" className="px-6 py-3">Position</th>
-                                    <th scope="col" className="px-6 py-3">Ad Ref.</th>
-                                    <th scope="col" className="px-6 py-3">Applied</th>
-                                    <th scope="col" className="px-6 py-3">Opening</th>
-                                    <th scope="col" className="px-6 py-3">Closing</th>
-                                    <th scope="col" className="px-6 py-3">Status</th>
-                                    <th scope="col" className="px-6 py-3 text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredCandidates.map((candidate) => {
-                                    const adId = candidate.adReference ? parseInt(candidate.adReference.replace('AD-', '')) : -1;
-                                    const ad = advertisements.find(a => a.id === adId);
-                                    return (
-                                    <tr key={candidate.id} className="border-b bg-white hover:bg-gray-50">
+                    {stage === 'final-shortlisting' && finalShortlistingTab === 'summary' ? (
+                        <div className="p-6">
+                            <div className="no-print flex justify-between items-end mb-6 pb-4 border-b gap-4 flex-wrap">
+                                <div className="flex items-end gap-4 flex-wrap">
+                                    <div>
+                                        <label htmlFor="summary-dept-filter" className="text-sm font-medium text-slate-600">Department</label>
+                                        <div className="relative mt-1">
+                                            <select 
+                                                id="summary-dept-filter" 
+                                                value={summaryDepartmentFilter}
+                                                onChange={e => setSummaryDepartmentFilter(e.target.value)}
+                                                className="w-56 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base"
+                                            >
+                                                {summaryDepartments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                                                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="summary-sec-filter" className="text-sm font-medium text-slate-600">Section</label>
+                                        <div className="relative mt-1">
+                                            <select 
+                                                id="summary-sec-filter" 
+                                                value={summarySectionFilter}
+                                                onChange={e => setSummarySectionFilter(e.target.value)}
+                                                disabled={summaryDepartmentFilter === 'All'}
+                                                className="w-56 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base disabled:bg-slate-50 disabled:cursor-not-allowed"
+                                            >
+                                                {summarySections.map(sec => <option key={sec} value={sec}>{sec}</option>)}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                                                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="summary-pos-filter" className="text-sm font-medium text-slate-600">Position</label>
+                                        <div className="relative mt-1">
+                                            <select 
+                                                id="summary-pos-filter" 
+                                                value={summaryPositionFilter}
+                                                onChange={e => setSummaryPositionFilter(e.target.value)}
+                                                className="w-56 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base"
+                                            >
+                                                {summaryPositions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+                                                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleSendSummary}
+                                    className="px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 font-semibold text-sm flex items-center"
+                                >
+                                    <PrinterIcon className="w-4 h-4 mr-2" />
+                                    Send Summary to Department
+                                </button>
+                            </div>
+                            <div className="print-only mb-6">
+                                <h2 className="text-2xl font-bold">HR Final Shortlisting Summary</h2>
+                                <p className="text-lg text-slate-600">
+                                    {summaryDepartmentFilter !== 'All' && `Department: ${summaryDepartmentFilter}`}
+                                    {summarySectionFilter !== 'All' && ` / Section: ${summarySectionFilter}`}
+                                    {summaryPositionFilter !== 'All' && ` / Position: ${summaryPositionFilter}`}
+                                </p>
+                            </div>
+                            <div id="summary-table-container">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>HR Shortlisting Summary ({filteredSummaryList.length})</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-base text-left text-gray-600">
+                                                <thead className="text-sm text-gray-700 uppercase bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col" className="px-6 py-3">Candidate Name</th>
+                                                        <th scope="col" className="px-6 py-3">Position</th>
+                                                        <th scope="col" className="px-6 py-3">Dept. Status</th>
+                                                        <th scope="col" className="px-6 py-3">HR Status</th>
+                                                        <th scope="col" className="px-6 py-3">HR Remarks</th>
+                                                        <th scope="col" className="px-6 py-3 text-center no-print-action">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {filteredSummaryList.length > 0 ? filteredSummaryList.map(c => {
+                                                        let hrStatus, hrStatusColor, hrRemarks;
+                                                        switch (c.status) {
+                                                            case 'Shortlisted for Interview':
+                                                                hrStatus = 'Shortlisted';
+                                                                hrStatusColor = 'bg-green-100 text-green-800';
+                                                                hrRemarks = c.shortlistingRemarks;
+                                                                break;
+                                                            case 'Rejected':
+                                                                hrStatus = 'Rejected';
+                                                                hrStatusColor = 'bg-red-100 text-red-800';
+                                                                hrRemarks = c.rejectionRemarks;
+                                                                break;
+                                                            case 'Recommended by Department':
+                                                            default:
+                                                                hrStatus = 'Pending';
+                                                                hrStatusColor = 'bg-yellow-100 text-yellow-800';
+                                                                hrRemarks = 'N/A';
+                                                                break;
+                                                        }
+
+                                                        return (
+                                                            <tr key={c.id} className="border-b bg-white hover:bg-gray-50">
+                                                                <td className="px-6 py-4 font-semibold text-gray-900">{c.name}</td>
+                                                                <td className="px-6 py-4">{c.positionAppliedFor}</td>
+                                                                <td className="px-6 py-4">
+                                                                    <span className="px-2 py-1 text-sm font-medium rounded-full bg-lime-100 text-lime-800">
+                                                                        Shortlisted
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-6 py-4">
+                                                                    <span className={`px-2 py-1 text-sm font-medium rounded-full ${hrStatusColor}`}>
+                                                                        {hrStatus}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-6 py-4 text-sm italic text-gray-500 max-w-xs truncate" title={hrRemarks}>
+                                                                    {hrRemarks || 'N/A'}
+                                                                </td>
+                                                                <td className="px-6 py-4 text-center no-print-action">
+                                                                    <button
+                                                                        onClick={() => alert(`Acknowledgement sent to the department for ${c.name}.`)}
+                                                                        className="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                                                                    >
+                                                                        Send for Dept Acknowledgement
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    }) : (
+                                                        <tr>
+                                                            <td colSpan={6} className="text-center py-10 text-gray-500">No candidates match the current filters.</td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-base text-left text-gray-600">
+                                <thead className="text-sm text-gray-700 uppercase bg-gray-50">
+                                    <tr>
                                         {(stage === 'collection' || stage === 'department-review' || stage === 'final-shortlisting') && (
-                                            <td className="px-6 py-4">
-                                                {selectableCandidates.some(c => c.id === candidate.id) && (
-                                                    <input 
-                                                        type="checkbox"
-                                                        checked={selectedCandidateIds.includes(candidate.id)}
-                                                        onChange={() => handleIndividualSelect(candidate.id)}
-                                                        className="h-4 w-4 text-[#0076b6] border-gray-300 rounded focus:ring-[#0076b6]"
-                                                    />
-                                                )}
-                                            </td>
+                                            <th scope="col" className="px-6 py-3 w-12">
+                                                <input
+                                                    type="checkbox"
+                                                    ref={headerCheckboxRef}
+                                                    onChange={handleSelectAll}
+                                                    disabled={selectableCandidates.length === 0}
+                                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                />
+                                            </th>
                                         )}
-                                        <td className="px-6 py-4">
-                                            <div className="font-semibold text-gray-900">{candidate.name}</div>
-                                            <div className="text-sm text-gray-500">{candidate.city}</div>
-                                        </td>
-                                        <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
-                                        <td className="px-6 py-4">{candidate.adReference || 'N/A'}</td>
-                                        <td className="px-6 py-4">{candidate.appliedDate || 'N/A'}</td>
-                                        <td className="px-6 py-4">{ad?.publishedOn || 'N/A'}</td>
-                                        <td className="px-6 py-4">{ad?.deadline || 'N/A'}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 text-sm font-medium rounded-full ${statusColorMap[candidate.status]}`}>
-                                                {stage === 'department-review' && candidate.status === 'Sent to Department' ? 'Pending Review' : candidate.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center space-x-2">
-                                            {renderActions(candidate)}
-                                            <button onClick={() => handleViewDetails(candidate)} className="font-medium text-[#0076b6] hover:underline text-sm">View Details</button>
-                                        </td>
+                                        <th scope="col" className="px-6 py-3">Name</th>
+                                        <th scope="col" className="px-6 py-3">Position</th>
+                                        <th scope="col" className="px-6 py-3">Ad Ref.</th>
+                                        <th scope="col" className="px-6 py-3">Applied</th>
+                                        <th scope="col" className="px-6 py-3">Opening</th>
+                                        <th scope="col" className="px-6 py-3">Closing</th>
+                                        <th scope="col" className="px-6 py-3">Status</th>
+                                        <th scope="col" className="px-6 py-3 text-center">Actions</th>
                                     </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {filteredCandidates.map((candidate) => {
+                                        const adId = candidate.adReference ? parseInt(candidate.adReference.replace('AD-', '')) : -1;
+                                        const ad = advertisements.find(a => a.id === adId);
+                                        return (
+                                        <tr key={candidate.id} className="border-b bg-white hover:bg-gray-50">
+                                            {(stage === 'collection' || stage === 'department-review' || stage === 'final-shortlisting') && (
+                                                <td className="px-6 py-4">
+                                                    {selectableCandidates.some(c => c.id === candidate.id) && (
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={selectedCandidateIds.includes(candidate.id)}
+                                                            onChange={() => handleIndividualSelect(candidate.id)}
+                                                            className="h-4 w-4 text-[#0076b6] border-gray-300 rounded focus:ring-[#0076b6]"
+                                                        />
+                                                    )}
+                                                </td>
+                                            )}
+                                            <td className="px-6 py-4">
+                                                <div className="font-semibold text-gray-900">{candidate.name}</div>
+                                                <div className="text-sm text-gray-500">{candidate.city}</div>
+                                            </td>
+                                            <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
+                                            <td className="px-6 py-4">{candidate.adReference || 'N/A'}</td>
+                                            <td className="px-6 py-4">{candidate.appliedDate || 'N/A'}</td>
+                                            <td className="px-6 py-4">{ad?.publishedOn || 'N/A'}</td>
+                                            <td className="px-6 py-4">{ad?.deadline || 'N/A'}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2 py-1 text-sm font-medium rounded-full ${statusColorMap[candidate.status]}`}>
+                                                    {stage === 'department-review' && candidate.status === 'Sent to Department' ? 'Pending Review' : candidate.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center space-x-2">
+                                                {renderActions(candidate)}
+                                                <button onClick={() => handleViewDetails(candidate)} className="font-medium text-[#0076b6] hover:underline text-sm">View Details</button>
+                                            </td>
+                                        </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
@@ -637,6 +907,25 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                     title={`Shortlist for Interview: ${candidateToShortlist.name}`}
                 />
             )}
+            <Modal isOpen={showSentConfirmation} onClose={() => setShowSentConfirmation(false)} title="Confirmation">
+                <div className="text-center p-4">
+                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                        <CheckIcon className="h-6 w-6 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900">Summary Ready to Send</h3>
+                    <p className="mt-2 text-base text-gray-600">
+                        The summary for the {summaryDepartmentFilter !== 'All' ? `${summaryDepartmentFilter} department` : 'selected departments'} is ready. The print dialog will now open, allowing you to save as a PDF to send for intimation.
+                    </p>
+                </div>
+                <div className="mt-4 flex justify-end p-4 bg-gray-50 rounded-b-xl">
+                    <button 
+                        onClick={handleConfirmSend} 
+                        className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
+                    >
+                        OK
+                    </button>
+                </div>
+            </Modal>
         </>
     );
 };
