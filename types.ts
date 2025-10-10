@@ -1,5 +1,4 @@
 
-
 export interface Step {
   id: number;
   title: string;
@@ -152,6 +151,7 @@ export interface Candidate {
     salaryRemarks?: string;
     attendanceStatus?: 'Pending' | 'Present' | 'Absent';
     documentChecklist?: Record<string, boolean>;
+    offerEvidence?: string;
 }
 
 export interface AdvertisedPositionInfo {

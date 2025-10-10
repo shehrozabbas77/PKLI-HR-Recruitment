@@ -116,7 +116,7 @@ const App: React.FC = () => {
       case 14:
         return <ApprovalForHire candidates={candidates.filter(c => c.status === 'Recommended for Hire')} setCandidates={setCandidates} />;
       case 15:
-        return <OfferLetter candidates={candidates.filter(c => c.status === 'Approved for Hire' || c.status === 'Offer Sent')} setCandidates={setCandidates} />;
+        return <OfferLetter candidates={candidates.filter(c => c.status === 'Approved for Hire' || c.status === 'Offer Sent' || c.status === 'Offer Accepted' || (c.status === 'Rejected' && c.offerEvidence))} setCandidates={setCandidates} />;
       case 16:
         return <MedicalScreening candidates={candidates.filter(c => c.status === 'Offer Accepted' || c.status === 'Offer Sent')} setCandidates={setCandidates} />;
       case 17:

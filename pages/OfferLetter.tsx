@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
 import type { Candidate } from '../types';
+import { Modal } from '../components/Modal';
 
 interface OfferLetterProps {
     candidates: Candidate[];
@@ -47,39 +49,91 @@ const numberToWords = (num: number): string => {
 
 const OfferLetter: React.FC<OfferLetterProps> = ({ candidates, setCandidates }) => {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [sectionFilter, setSectionFilter] = useState('All');
   const [positionFilter, setPositionFilter] = useState('All');
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [actionForEvidence, setActionForEvidence] = useState<{ candidateId: number; status: 'Offer Accepted' | 'Rejected' } | null>(null);
+  const [confirmationDetails, setConfirmationDetails] = useState<{
+    candidateId: number;
+    status: 'Offer Accepted' | 'Rejected';
+    file: File;
+  } | null>(null);
 
-  const allRelevantCandidates = useMemo(() => 
-    candidates.filter(c => c.status === 'Approved for Hire' || c.status === 'Offer Sent'), 
-  [candidates]);
-
-  const departments = useMemo(() => ['All', ...new Set(allRelevantCandidates.map(c => c.department))], [allRelevantCandidates]);
+  const departments = useMemo(() => ['All', ...new Set(candidates.map(c => c.department))], [candidates]);
   const sections = useMemo(() => {
     if (departmentFilter === 'All') return ['All'];
-    return ['All', ...new Set(allRelevantCandidates.filter(c => c.department === departmentFilter).map(c => c.section))];
-  }, [allRelevantCandidates, departmentFilter]);
-  const positions = useMemo(() => ['All', ...new Set(allRelevantCandidates.map(c => c.positionAppliedFor))], [allRelevantCandidates]);
+    return ['All', ...new Set(candidates.filter(c => c.department === departmentFilter).map(c => c.section))];
+  }, [candidates, departmentFilter]);
+  const positions = useMemo(() => ['All', ...new Set(candidates.map(c => c.positionAppliedFor))], [candidates]);
 
   const filteredCandidates = useMemo(() => {
-    return allRelevantCandidates.filter(c => 
+    return candidates.filter(c => 
         (departmentFilter === 'All' || c.department === departmentFilter) &&
         (sectionFilter === 'All' || c.section === sectionFilter) &&
         (positionFilter === 'All' || c.positionAppliedFor === positionFilter)
     );
-  }, [allRelevantCandidates, departmentFilter, sectionFilter, positionFilter]);
+  }, [candidates, departmentFilter, sectionFilter, positionFilter]);
 
   const candidatesToOffer = useMemo(() => filteredCandidates.filter(c => c.status === 'Approved for Hire'), [filteredCandidates]);
   const offersSent = useMemo(() => filteredCandidates.filter(c => c.status === 'Offer Sent'), [filteredCandidates]);
+  const offerHistory = useMemo(() => 
+      filteredCandidates.filter(c => 
+          c.status === 'Offer Accepted' || 
+          (c.status === 'Rejected' && c.offerEvidence)
+      ).sort((a,b) => (a.name > b.name) ? 1 : -1),
+  [filteredCandidates]);
 
+  const handleSendOffer = (id: number) => {
+      setCandidates(prev => prev.map(c => {
+        if (c.id === id) {
+          return { ...c, status: 'Offer Sent' };
+        }
+        return c;
+      }));
+      setSelectedCandidate(null);
+  };
+  
+  const handleStatusChangeWithEvidence = (candidateId: number, status: 'Offer Accepted' | 'Rejected') => {
+    setActionForEvidence({ candidateId, status });
+    fileInputRef.current?.click();
+  };
 
-  const handleStatusChange = (id: number, status: 'Offer Sent' | 'Offer Accepted') => {
-      setCandidates(prev => prev.map(c => c.id === id ? { ...c, status } : c));
-      if (status === 'Offer Sent') {
-          setSelectedCandidate(null);
+  const handleEvidenceUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && actionForEvidence) {
+      const { candidateId, status } = actionForEvidence;
+      setConfirmationDetails({
+        candidateId,
+        status,
+        file,
+      });
+      setActionForEvidence(null);
+    }
+    if (event.target) {
+      event.target.value = '';
+    }
+  };
+
+  const handleConfirmProceed = () => {
+    if (!confirmationDetails) return;
+
+    const { candidateId, status, file } = confirmationDetails;
+    
+    setCandidates(prev => prev.map(c => {
+      if (c.id === candidateId) {
+        if (status === 'Rejected') {
+          return { ...c, status: 'Rejected', rejectionRemarks: 'Candidate rejected the offer.', offerEvidence: file.name };
+        }
+        return { ...c, status, offerEvidence: file.name };
       }
+      return c;
+    }));
+    
+    setConfirmationDetails(null);
   };
   
   const refNo = selectedCandidate ? `PKLI/HR/TA/${selectedCandidate.id}/${new Date().getFullYear()}` : '';
@@ -89,10 +143,17 @@ const OfferLetter: React.FC<OfferLetterProps> = ({ candidates, setCandidates }) 
 
   return (
     <div className="space-y-6">
+       <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleEvidenceUpload}
+        className="hidden"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.msg,.eml"
+      />
       <Card>
         <CardHeader>
-            <CardTitle>Offer Letter Generation</CardTitle>
-            <CardDescription>Select a candidate to generate and issue a conditional offer letter.</CardDescription>
+            <CardTitle>Offer Letter Generation & Tracking</CardTitle>
+            <CardDescription>Generate, send, and track offer letter responses.</CardDescription>
             <div className="flex items-end gap-6 pt-4 mt-4 border-t">
               <div>
                 <label htmlFor="dept-filter" className="text-sm font-medium text-slate-600">Department</label>
@@ -134,39 +195,140 @@ const OfferLetter: React.FC<OfferLetterProps> = ({ candidates, setCandidates }) 
                 </div>
               </div>
             </div>
+            <div className="mt-4 border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button
+                        onClick={() => setActiveTab('pending')}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base ${activeTab === 'pending' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                    >
+                        Pending Actions
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base ${activeTab === 'history' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                    >
+                        Action History
+                    </button>
+                </nav>
+            </div>
         </CardHeader>
         <CardContent>
-            <h3 className="text-lg font-semibold mb-2">Candidates Ready for Offer</h3>
-            {candidatesToOffer.length > 0 ? (
-                <div className="overflow-x-auto border rounded-lg">
-                    <table className="w-full text-base">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left">Name</th>
-                                <th className="px-6 py-3 text-left">Position</th>
-                                <th className="px-6 py-3 text-left">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {candidatesToOffer.map(candidate => (
-                                <tr key={candidate.id} className="border-b bg-white">
-                                    <td className="px-6 py-4 font-semibold">{candidate.name}</td>
-                                    <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
-                                    <td className="px-6 py-4">
-                                        <button 
-                                            onClick={() => setSelectedCandidate(candidate)}
-                                            className="font-medium text-blue-600 hover:underline"
-                                        >
-                                            Generate Offer
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {activeTab === 'pending' && (
+                <div className="space-y-8">
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Candidates Ready for Offer</h3>
+                        {candidatesToOffer.length > 0 ? (
+                            <div className="overflow-x-auto border rounded-lg">
+                                <table className="w-full text-base">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left">Name</th>
+                                            <th className="px-6 py-3 text-left">Position</th>
+                                            <th className="px-6 py-3 text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {candidatesToOffer.map(candidate => (
+                                            <tr key={candidate.id} className="border-b bg-white">
+                                                <td className="px-6 py-4 font-semibold">{candidate.name}</td>
+                                                <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
+                                                <td className="px-6 py-4">
+                                                    <button 
+                                                        onClick={() => setSelectedCandidate(candidate)}
+                                                        className="font-medium text-blue-600 hover:underline"
+                                                    >
+                                                        Generate Offer
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-gray-500">No candidates are currently approved for hire with the selected filters.</p>
+                        )}
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Sent Offers</h3>
+                        {offersSent.length > 0 ? (
+                            <div className="overflow-x-auto border rounded-lg">
+                                <table className="w-full text-base">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left">Name</th>
+                                            <th className="px-6 py-3 text-left">Position</th>
+                                            <th className="px-6 py-3 text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {offersSent.map(candidate => (
+                                            <tr key={candidate.id} className="border-b bg-white">
+                                                <td className="px-6 py-4 font-semibold">{candidate.name}</td>
+                                                <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <button 
+                                                            onClick={() => handleStatusChangeWithEvidence(candidate.id, 'Offer Accepted')}
+                                                            className="px-3 py-1 text-sm font-semibold text-white bg-green-500 rounded-md hover:bg-green-600"
+                                                        >
+                                                            Mark as Accepted
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleStatusChangeWithEvidence(candidate.id, 'Rejected')}
+                                                            className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700"
+                                                        >
+                                                            Mark as Rejected
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-gray-500">No offers have been sent yet with the selected filters.</p>
+                        )}
+                    </div>
                 </div>
-            ) : (
-                <p className="text-gray-500">No candidates are currently approved for hire with the selected filters.</p>
+            )}
+            {activeTab === 'history' && (
+                <div>
+                    <h3 className="text-lg font-semibold mb-2">Offer Action History</h3>
+                    {offerHistory.length > 0 ? (
+                        <div className="overflow-x-auto border rounded-lg">
+                            <table className="w-full text-base">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left">Name</th>
+                                        <th className="px-6 py-3 text-left">Position</th>
+                                        <th className="px-6 py-3 text-left">Status</th>
+                                        <th className="px-6 py-3 text-left">Evidence File</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {offerHistory.map(candidate => (
+                                        <tr key={candidate.id} className="border-b bg-white">
+                                            <td className="px-6 py-4 font-semibold">{candidate.name}</td>
+                                            <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
+                                            <td className="px-6 py-4">
+                                                {candidate.status === 'Offer Accepted' ? (
+                                                <span className="px-2 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">Accepted</span>
+                                                ) : (
+                                                <span className="px-2 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">Rejected</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">{candidate.offerEvidence || 'N/A'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <p className="text-gray-500">No offer history available for the selected filters.</p>
+                    )}
+                </div>
             )}
         </CardContent>
       </Card>
@@ -180,7 +342,7 @@ const OfferLetter: React.FC<OfferLetterProps> = ({ candidates, setCandidates }) 
                   <CardDescription>Review and send the conditional offer letter.</CardDescription>
                 </div>
                 <button 
-                    onClick={() => handleStatusChange(selectedCandidate.id, 'Offer Sent')}
+                    onClick={() => handleSendOffer(selectedCandidate.id)}
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-base font-semibold"
                 >
                   Send Offer Letter
@@ -246,45 +408,38 @@ const OfferLetter: React.FC<OfferLetterProps> = ({ candidates, setCandidates }) 
           </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sent Offers</CardTitle>
-          <CardDescription>Track sent offers and mark them as accepted to proceed with pre-employment screening.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {offersSent.length > 0 ? (
-                <div className="overflow-x-auto border rounded-lg">
-                    <table className="w-full text-base">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left">Name</th>
-                                <th className="px-6 py-3 text-left">Position</th>
-                                <th className="px-6 py-3 text-left">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {offersSent.map(candidate => (
-                                <tr key={candidate.id} className="border-b bg-white">
-                                    <td className="px-6 py-4 font-semibold">{candidate.name}</td>
-                                    <td className="px-6 py-4">{candidate.positionAppliedFor}</td>
-                                    <td className="px-6 py-4">
-                                        <button 
-                                            onClick={() => handleStatusChange(candidate.id, 'Offer Accepted')}
-                                            className="px-3 py-1 text-sm font-semibold text-white bg-green-500 rounded-md hover:bg-green-600"
-                                        >
-                                            Mark as Accepted
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            ) : (
-                <p className="text-gray-500">No offers have been sent yet with the selected filters.</p>
-            )}
-        </CardContent>
-      </Card>
+      {confirmationDetails && (
+        <Modal
+          isOpen={!!confirmationDetails}
+          onClose={() => setConfirmationDetails(null)}
+          title="Confirm Action"
+        >
+          <div className="space-y-4">
+            <p className="text-base text-gray-700">
+              You have attached the file: <span className="font-semibold">{confirmationDetails.file.name}</span>.
+            </p>
+            <p className="text-base text-gray-700">
+              Do you want to proceed with marking this offer as <span className="font-semibold">"{confirmationDetails.status === 'Rejected' ? 'Rejected' : 'Accepted'}"</span>?
+            </p>
+          </div>
+          <div className="flex justify-end pt-6 space-x-3 border-t mt-6">
+            <button
+              type="button"
+              onClick={() => setConfirmationDetails(null)}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmProceed}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold"
+            >
+              Proceed
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
