@@ -80,6 +80,8 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
     const [summarySectionFilter, setSummarySectionFilter] = useState('All');
     const [summaryPositionFilter, setSummaryPositionFilter] = useState('All');
     const [showSentConfirmation, setShowSentConfirmation] = useState(false);
+    const [summarySelectedIds, setSummarySelectedIds] = useState<number[]>([]);
+    const summaryHeaderCheckboxRef = useRef<HTMLInputElement>(null);
     
     const summaryCandidates = useMemo(() => candidates.filter(c => 
         c.status === 'Recommended by Department' ||
@@ -119,6 +121,45 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
 
     useEffect(() => { setSummarySectionFilter('All'); }, [summaryDepartmentFilter]);
     useEffect(() => { setSummaryPositionFilter('All'); }, [summarySectionFilter]);
+    
+    useEffect(() => {
+        if (summaryHeaderCheckboxRef.current) {
+            const selectableCount = filteredSummaryList.length;
+            const selectedCount = summarySelectedIds.length;
+            summaryHeaderCheckboxRef.current.checked = selectableCount > 0 && selectedCount === selectableCount;
+            summaryHeaderCheckboxRef.current.indeterminate = selectedCount > 0 && selectedCount < selectableCount;
+        }
+    }, [summarySelectedIds, filteredSummaryList]);
+
+    const handleSelectAllSummary = () => {
+        setSummarySelectedIds(filteredSummaryList.map(c => c.id));
+    };
+
+    const handleDeselectAllSummary = () => {
+        setSummarySelectedIds([]);
+    };
+
+    const handleSelectSingleSummary = (id: number) => {
+        setSummarySelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+    
+    const handleSelectAllSummaryCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) {
+            handleSelectAllSummary();
+        } else {
+            handleDeselectAllSummary();
+        }
+    };
+
+    const handleSendBulkAcknowledgement = () => {
+        if (summarySelectedIds.length > 0) {
+            alert(`Acknowledgement sent to the respective departments for ${summarySelectedIds.length} selected candidate(s).`);
+            setSummarySelectedIds([]);
+        }
+    };
+
 
     const handleSendSummary = () => {
         setShowSentConfirmation(true);
@@ -703,19 +744,39 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                             <div id="summary-table-container">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>HR Shortlisting Summary ({filteredSummaryList.length})</CardTitle>
+                                        <div className="flex justify-between items-center">
+                                            <CardTitle>HR Shortlisting Summary ({filteredSummaryList.length})</CardTitle>
+                                            <div className="flex items-center space-x-4 no-print">
+                                                <button onClick={handleSelectAllSummary} className="text-sm font-semibold text-blue-600 hover:underline">Select All</button>
+                                                <button onClick={handleDeselectAllSummary} className="text-sm font-semibold text-blue-600 hover:underline">Deselect All</button>
+                                                <button
+                                                    onClick={handleSendBulkAcknowledgement}
+                                                    disabled={summarySelectedIds.length === 0}
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold text-sm flex items-center disabled:bg-gray-400"
+                                                >
+                                                    Send to Dept for Acknowledgement ({summarySelectedIds.length})
+                                                </button>
+                                            </div>
+                                        </div>
                                     </CardHeader>
                                     <CardContent className="p-0">
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-base text-left text-gray-600">
                                                 <thead className="text-sm text-gray-700 uppercase bg-gray-50">
                                                     <tr>
+                                                        <th scope="col" className="p-4 no-print-action">
+                                                            <input
+                                                                type="checkbox"
+                                                                ref={summaryHeaderCheckboxRef}
+                                                                onChange={handleSelectAllSummaryCheckbox}
+                                                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                            />
+                                                        </th>
                                                         <th scope="col" className="px-6 py-3">Candidate Name</th>
                                                         <th scope="col" className="px-6 py-3">Position</th>
                                                         <th scope="col" className="px-6 py-3">Dept. Status</th>
                                                         <th scope="col" className="px-6 py-3">HR Status</th>
                                                         <th scope="col" className="px-6 py-3">HR Remarks</th>
-                                                        <th scope="col" className="px-6 py-3 text-center no-print-action">Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -742,6 +803,14 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
 
                                                         return (
                                                             <tr key={c.id} className="border-b bg-white hover:bg-gray-50">
+                                                                <td className="p-4 no-print-action">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={summarySelectedIds.includes(c.id)}
+                                                                        onChange={() => handleSelectSingleSummary(c.id)}
+                                                                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                    />
+                                                                </td>
                                                                 <td className="px-6 py-4 font-semibold text-gray-900">{c.name}</td>
                                                                 <td className="px-6 py-4">{c.positionAppliedFor}</td>
                                                                 <td className="px-6 py-4">
@@ -756,14 +825,6 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                                                 </td>
                                                                 <td className="px-6 py-4 text-sm italic text-gray-500 max-w-xs truncate" title={hrRemarks}>
                                                                     {hrRemarks || 'N/A'}
-                                                                </td>
-                                                                <td className="px-6 py-4 text-center no-print-action">
-                                                                    <button
-                                                                        onClick={() => alert(`Acknowledgement sent to the department for ${c.name}.`)}
-                                                                        className="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                                                                    >
-                                                                        Send for Dept Acknowledgement
-                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         );
