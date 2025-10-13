@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import type { JobDescription, JobDescriptionStatus, StaffingPosition } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -234,7 +232,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newJdData, setNewJdData] = useState(initialJdFormData);
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState(false);
-  const [approvalAction, setApprovalAction] = useState<'approve' | 'reject' | null>(null);
+  const [approvalAction, setApprovalAction] = useState<'approve' | 'reject' | 'return' | null>(null);
   const [editingJd, setEditingJd] = useState<JobDescription | null>(null);
   
   // Filter states
@@ -315,53 +313,71 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
     setIsCreateModalOpen(true); // Reuse the create modal
 };
 
-  const handleUpdateStatus = (id: number, approve: boolean, remarks: string, signature: string) => {
+  const handleUpdateStatus = (id: number, action: 'approve' | 'reject' | 'return', remarks: string, signature: string) => {
     const jd = jobDescriptions.find(j => j.id === id);
     if (!jd) return;
-    
+
     let newStatus: JobDescriptionStatus = jd.status;
     const newApprovalHistory = JSON.parse(JSON.stringify(jd.approvalHistory));
     const now = new Date().toISOString().split('T')[0];
 
-    const updateCurrentStep = (status: 'Approved' | 'Reviewed' | 'Rejected') => {
-        const stepIndex = newApprovalHistory.findIndex((s: any) => s.status === 'Pending');
-        if (stepIndex > -1) {
-            newApprovalHistory[stepIndex].status = status;
-            newApprovalHistory[stepIndex].date = now;
-            newApprovalHistory[stepIndex].approver = signature;
-            newApprovalHistory[stepIndex].comments = remarks;
-        }
-    };
+    if (action === 'approve') {
+        if (jd.status === 'Pending HOD Approval' || jd.status === 'Pending HR Review') {
+            const lastPendingStepIndex = newApprovalHistory.map((s: any, i: number) => s.status === 'Pending' ? i : -1).filter((i: number) => i !== -1).pop();
+            
+            if (lastPendingStepIndex !== undefined) {
+                newApprovalHistory[lastPendingStepIndex] = {
+                    ...newApprovalHistory[lastPendingStepIndex],
+                    status: jd.status === 'Pending HR Review' ? 'Reviewed' : 'Approved',
+                    date: now, approver: signature, comments: remarks,
+                };
 
-    if (approve) {
-        if (jd.status === 'Pending HOD Approval') {
-            newStatus = 'Pending HR Review';
-            updateCurrentStep('Approved');
-            newApprovalHistory.push({ role: 'Reviewed By (HR)', status: 'Pending' });
-        } else if (jd.status === 'Pending HR Review') {
-            newStatus = 'Approved';
-            updateCurrentStep('Reviewed');
+                if (jd.status === 'Pending HOD Approval') {
+                    newStatus = 'Pending HR Review';
+                    newApprovalHistory.push({ role: 'Reviewed By (HR)', status: 'Pending' });
+                } else if (jd.status === 'Pending HR Review') {
+                    newStatus = 'Approved';
+                }
+            }
         }
-    } else { // Return for revision
-        newStatus = 'Needs Revision';
-        updateCurrentStep('Rejected');
+    } else if (action === 'return') {
+        const currentPendingStepIndex = newApprovalHistory.findIndex((s: any) => s.status === 'Pending');
+        if (currentPendingStepIndex > -1) {
+            newApprovalHistory[currentPendingStepIndex] = {
+                ...newApprovalHistory[currentPendingStepIndex],
+                status: 'Rejected', date: now, approver: signature, comments: remarks,
+            };
+            if (jd.status === 'Pending HR Review') {
+                newStatus = 'Pending HOD Approval';
+                newApprovalHistory.push({ role: 'Approved By (HOD)', status: 'Pending' });
+            }
+            else if (jd.status === 'Pending HOD Approval') newStatus = 'Needs Revision';
+        }
+    } else if (action === 'reject') {
+        const currentPendingStepIndex = newApprovalHistory.findIndex((s: any) => s.status === 'Pending');
+        if (currentPendingStepIndex > -1) {
+             newApprovalHistory[currentPendingStepIndex] = {
+                ...newApprovalHistory[currentPendingStepIndex],
+                status: 'Rejected', date: now, approver: signature, comments: remarks,
+            };
+        }
+        newStatus = 'Rejected';
     }
-
+    
     const updatedJd = { ...jd, status: newStatus, approvalHistory: newApprovalHistory };
 
     setJobDescriptions(prev => prev.map(j => (j.id === id ? updatedJd : j)));
     setSelectedJd(updatedJd);
   };
   
-  const handleApprovalAction = (action: 'approve' | 'reject') => {
+  const handleApprovalAction = (action: 'approve' | 'reject' | 'return') => {
     setApprovalAction(action);
     setIsApprovalModalOpen(true);
   };
 
   const handleConfirmApproval = (remarks: string) => {
     if (selectedJd && approvalAction) {
-        // In a real app, the user's name would be fetched from the session.
-        handleUpdateStatus(selectedJd.id, approvalAction === 'approve', remarks, "Current User");
+        handleUpdateStatus(selectedJd.id, approvalAction, remarks, "Current User");
     }
     setIsApprovalModalOpen(false);
     setApprovalAction(null);
@@ -623,14 +639,22 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                     isCompleted={selectedJd.status === 'Approved'}
                     isRejected={selectedJd.status === 'Rejected' || selectedJd.status === 'Needs Revision'}
                     approvalHistory={selectedJd.approvalHistory}
+                    overallStatus={selectedJd.status}
                   />
                 </div>
             </div>
           {(selectedJd.status === 'Pending HOD Approval' || selectedJd.status === 'Pending HR Review') && (
             <div className="flex justify-end pt-6 space-x-3 border-t mt-6">
-              <button
+               <button
                 type="button"
                 onClick={() => handleApprovalAction('reject')}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-base font-semibold"
+              >
+                Reject
+              </button>
+              <button
+                type="button"
+                onClick={() => handleApprovalAction('return')}
                 className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 text-base font-semibold"
               >
                 Return for Revision
@@ -640,7 +664,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                 onClick={() => handleApprovalAction('approve')}
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-base font-semibold"
               >
-                {selectedJd.status === 'Pending HOD Approval' ? 'Approve (as HOD)' : 'Approve (as HR)'}
+                {selectedJd.status === 'Pending HOD Approval' ? 'Approve (as HOD)' : 'Review & Finalize (as HR)'}
               </button>
             </div>
           )}
@@ -663,6 +687,7 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                             isCompleted={selectedJd.status === 'Approved'}
                             isRejected={selectedJd.status === 'Rejected' || selectedJd.status === 'Needs Revision'}
                             approvalHistory={selectedJd.approvalHistory}
+                            overallStatus={selectedJd.status}
                         />
                     </div>
                 </div>
@@ -776,13 +801,13 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
         </form>
       </Modal>
 
-      {selectedJd && approvalAction && (
+      {selectedJd && (approvalAction) && (
         <ApprovalModal
           isOpen={isApprovalModalOpen}
           onClose={() => setIsApprovalModalOpen(false)}
           onConfirm={handleConfirmApproval}
           action={approvalAction}
-          title={`${approvalAction === 'approve' ? 'Approve' : 'Return'} Job Description`}
+          title={`${approvalAction.charAt(0).toUpperCase() + approvalAction.slice(1)} Job Description`}
         />
       )}
     </>

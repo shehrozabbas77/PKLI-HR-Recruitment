@@ -20,6 +20,8 @@ const statusColorMap: { [key in CandidateStatus]: string } = {
     'Recommended by Department': 'bg-lime-100 text-lime-800',
     'Rejected': 'bg-[#fde8e9] text-[#c01823]',
     'Shortlisted for Interview': 'bg-purple-100 text-purple-800',
+    'Pending Dept. Acknowledgement': 'bg-teal-100 text-teal-800',
+    'Acknowledged': 'bg-slate-200 text-slate-700',
     'Recommended for Hire': 'bg-teal-100 text-teal-800',
     'Approved for Hire': 'bg-green-100 text-green-800',
     'Offer Sent': 'bg-yellow-100 text-yellow-800',
@@ -39,14 +41,14 @@ const stageConfig = {
     'department-review': {
         title: 'Departmental Review & Shortlisting',
         description: 'Review candidates sent by HR and provide shortlisting recommendations.',
-        filters: ['All', 'Pending Review', 'Recommended', 'Rejected'],
+        filters: ['All', 'Pending Review', 'Pending Acknowledgement', 'Recommended', 'Rejected'],
         initialFilter: 'Pending Review',
         // Show candidates sent to the dept and those they have recommended or rejected at this stage.
-        statuses: ['Sent to Department', 'Recommended by Department'],
+        statuses: ['Sent to Department', 'Recommended by Department', 'Pending Dept. Acknowledgement', 'Acknowledged'],
     },
     'final-shortlisting': {
         title: 'HR Final Shortlisting',
-        description: 'Finalize shortlist based on departmental review.',
+        description: 'Finalize shortlist based on departmental review and send for scheduling.',
         filters: ['All', 'Ready to Finalize', 'Shortlisted', 'Rejected'],
         initialFilter: 'Ready to Finalize',
         statuses: ['Recommended by Department', 'Shortlisted for Interview'],
@@ -74,14 +76,23 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
     const [dataFetchedForAd, setDataFetchedForAd] = useState<number | null>(null);
     const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
-    // State for the new summary tab in 'final-shortlisting'
-    const [finalShortlistingTab, setFinalShortlistingTab] = useState<'review' | 'summary'>('review');
+    // State for the tabs in 'final-shortlisting'
+    const [finalShortlistingTab, setFinalShortlistingTab] = useState<'review' | 'summary' | 'scheduling'>('review');
+    
+    // State for Summary Tab
     const [summaryDepartmentFilter, setSummaryDepartmentFilter] = useState('All');
     const [summarySectionFilter, setSummarySectionFilter] = useState('All');
     const [summaryPositionFilter, setSummaryPositionFilter] = useState('All');
     const [showSentConfirmation, setShowSentConfirmation] = useState(false);
     const [summarySelectedIds, setSummarySelectedIds] = useState<number[]>([]);
     const summaryHeaderCheckboxRef = useRef<HTMLInputElement>(null);
+    
+    // State for Scheduling Tab
+    const [schedulingDepartmentFilter, setSchedulingDepartmentFilter] = useState('All');
+    const [schedulingSectionFilter, setSchedulingSectionFilter] = useState('All');
+    const [schedulingPositionFilter, setSchedulingPositionFilter] = useState('All');
+    const [schedulingSelectedIds, setSchedulingSelectedIds] = useState<number[]>([]);
+    const schedulingHeaderCheckboxRef = useRef<HTMLInputElement>(null);
     
     const summaryCandidates = useMemo(() => candidates.filter(c => 
         c.status === 'Recommended by Department' ||
@@ -155,6 +166,9 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
 
     const handleSendBulkAcknowledgement = () => {
         if (summarySelectedIds.length > 0) {
+             setCandidates(prev => prev.map(c => 
+                summarySelectedIds.includes(c.id) ? { ...c, status: 'Pending Dept. Acknowledgement' } : c
+            ));
             alert(`Acknowledgement sent to the respective departments for ${summarySelectedIds.length} selected candidate(s).`);
             setSummarySelectedIds([]);
         }
@@ -169,6 +183,64 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         setShowSentConfirmation(false);
         setTimeout(() => window.print(), 300); // Give modal time to close
     }
+    
+    // --- Logic for Scheduling Tab ---
+    const acknowledgedCandidates = useMemo(() => candidates.filter(c => c.status === 'Acknowledged'), [candidates]);
+
+    const schedulingDepartments = useMemo(() => ['All', ...Array.from(new Set(acknowledgedCandidates.map(c => c.department)))], [acknowledgedCandidates]);
+    
+    const schedulingSections = useMemo(() => {
+        if (schedulingDepartmentFilter === 'All') return ['All'];
+        const relevant = acknowledgedCandidates.filter(c => c.department === schedulingDepartmentFilter);
+        return ['All', ...Array.from(new Set(relevant.map(c => c.section)))];
+    }, [acknowledgedCandidates, schedulingDepartmentFilter]);
+
+    const schedulingPositions = useMemo(() => {
+        let relevant = acknowledgedCandidates;
+        if (schedulingDepartmentFilter !== 'All') relevant = relevant.filter(c => c.department === schedulingDepartmentFilter);
+        if (schedulingSectionFilter !== 'All') relevant = relevant.filter(c => c.section === schedulingSectionFilter);
+        return ['All', ...Array.from(new Set(relevant.map(c => c.positionAppliedFor)))];
+    }, [acknowledgedCandidates, schedulingDepartmentFilter, schedulingSectionFilter]);
+
+    const filteredAcknowledgedList = useMemo(() =>
+        acknowledgedCandidates.filter(c =>
+            (schedulingDepartmentFilter === 'All' || c.department === schedulingDepartmentFilter) &&
+            (schedulingSectionFilter === 'All' || c.section === schedulingSectionFilter) &&
+            (schedulingPositionFilter === 'All' || c.positionAppliedFor === schedulingPositionFilter)
+        ),
+        [acknowledgedCandidates, schedulingDepartmentFilter, schedulingSectionFilter, schedulingPositionFilter]
+    );
+
+    useEffect(() => { setSchedulingSectionFilter('All'); }, [schedulingDepartmentFilter]);
+    useEffect(() => { setSchedulingPositionFilter('All'); }, [schedulingSectionFilter]);
+
+    useEffect(() => {
+        if (schedulingHeaderCheckboxRef.current) {
+            const selectableCount = filteredAcknowledgedList.length;
+            const selectedCount = schedulingSelectedIds.length;
+            schedulingHeaderCheckboxRef.current.checked = selectableCount > 0 && selectedCount === selectableCount;
+            schedulingHeaderCheckboxRef.current.indeterminate = selectedCount > 0 && selectedCount < selectableCount;
+        }
+    }, [schedulingSelectedIds, filteredAcknowledgedList]);
+
+    const handleSelectAllScheduling = () => setSchedulingSelectedIds(filteredAcknowledgedList.map(c => c.id));
+    const handleDeselectAllScheduling = () => setSchedulingSelectedIds([]);
+    const handleSelectSingleScheduling = (id: number) => {
+        setSchedulingSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    };
+    const handleSelectAllSchedulingCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.target.checked ? handleSelectAllScheduling() : handleDeselectAllScheduling();
+    };
+    const handleSendForScheduling = () => {
+        if (schedulingSelectedIds.length > 0) {
+            setCandidates(prev => prev.map(c => 
+                schedulingSelectedIds.includes(c.id) ? { ...c, status: 'Shortlisted for Interview' } : c
+            ));
+            alert(`${schedulingSelectedIds.length} candidate(s) have been sent for interview scheduling.`);
+            setSchedulingSelectedIds([]);
+        }
+    };
+
 
     const handleGetData = () => {
         if (!selectedAdId) return;
@@ -185,7 +257,8 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         return candidates.filter(c => {
             const preInterviewStatuses: CandidateStatus[] = [
                 'New', 'Under Review', 'Sent to Department',
-                'Recommended by Department', 'Rejected'
+                'Recommended by Department', 'Rejected',
+                'Pending Dept. Acknowledgement', 'Acknowledged'
             ];
 
             if (stage === 'collection') {
@@ -195,7 +268,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                 return config.statuses.includes(c.status) || c.status === 'Sent to Department' || (c.status === 'Rejected' && c.rejectionRemarks?.includes('department'));
             }
             if (stage === 'final-shortlisting') {
-                return config.statuses.includes(c.status) || (c.status === 'Rejected' && !c.rejectionRemarks?.includes('department'));
+                return config.statuses.includes(c.status) || c.status === 'Acknowledged' || (c.status === 'Rejected' && !c.rejectionRemarks?.includes('department'));
             }
             return false;
         });
@@ -262,6 +335,12 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         setCandidateToShortlist(null);
     };
 
+    const handleAcknowledge = (candidateId: number) => {
+        setCandidates(prev => prev.map(c => 
+            c.id === candidateId ? { ...c, status: 'Acknowledged' } : c
+        ));
+    };
+
     const filteredCandidates = useMemo(() => {
         if (stage === 'collection' && !dataFetchedForAd) {
             return [];
@@ -283,6 +362,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                 if (filter === 'Rejected') return c.status === 'Rejected';
                 
                 if (filter === 'Pending Review') return c.status === 'Sent to Department';
+                if (filter === 'Pending Acknowledgement') return c.status === 'Pending Dept. Acknowledgement';
                 if (filter === 'Recommended') return c.status === 'Recommended by Department';
                 if (filter === 'Ready to Finalize') return c.status === 'Recommended by Department';
                 if (filter === 'Shortlisted') return c.status === 'Shortlisted for Interview';
@@ -309,13 +389,16 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
             return filteredCandidates.filter(c => c.status !== 'Rejected');
         }
         if (stage === 'department-review') {
+            if (filter === 'Pending Acknowledgement') {
+                return filteredCandidates.filter(c => c.status === 'Pending Dept. Acknowledgement');
+            }
             return filteredCandidates.filter(c => c.status === 'Sent to Department');
         }
         if (stage === 'final-shortlisting') {
             return filteredCandidates.filter(c => c.status === 'Recommended by Department');
         }
         return [];
-    }, [filteredCandidates, stage]);
+    }, [filteredCandidates, stage, filter]);
     
     useEffect(() => {
         if (headerCheckboxRef.current) {
@@ -376,6 +459,17 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         setSelectedCandidateIds([]);
     };
 
+    const handleAcknowledgeSelected = () => {
+        setCandidates(prev =>
+            prev.map(c =>
+                selectedCandidateIds.includes(c.id)
+                    ? { ...c, status: 'Acknowledged' }
+                    : c
+            )
+        );
+        setSelectedCandidateIds([]);
+    };
+
     const handleShortlistSelected = () => {
         const remarks = 'Shortlisted via bulk action.';
         setCandidates(prev =>
@@ -420,6 +514,10 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                         <button onClick={() => handleStatusChange(candidate.id, 'Recommended by Department')} className={`${actionButtonClass} bg-green-500 hover:bg-green-600`}>Recommend</button>
                         <button onClick={() => handleRejectClick(candidate)} className={`${actionButtonClass} bg-orange-500 hover:bg-orange-600`}>Don't Recommend</button>
                     </>
+                );
+            } else if (candidate.status === 'Pending Dept. Acknowledgement') {
+                return (
+                    <button onClick={() => handleAcknowledge(candidate.id)} className={`${actionButtonClass} bg-blue-500 hover:bg-blue-600`}>Acknowledge</button>
                 );
             }
         } else if (stage === 'final-shortlisting') {
@@ -631,6 +729,12 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                         >
                                             Summary
                                         </button>
+                                        <button
+                                            onClick={() => setFinalShortlistingTab('scheduling')}
+                                            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base ${finalShortlistingTab === 'scheduling' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+                                        >
+                                            Send for Interview Scheduling
+                                        </button>
                                     </nav>
                                 </div>
                             )}
@@ -647,12 +751,20 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                     )}
                                     {stage === 'department-review' && (
                                         <div className="flex items-center space-x-3 pt-4 mt-4 border-t">
-                                            <button onClick={handleRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                                Recommend Selected ({selectedCandidateIds.length})
-                                            </button>
-                                            <button onClick={handleDontRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                                Don't Recommend Selected ({selectedCandidateIds.length})
-                                            </button>
+                                            {filter === 'Pending Acknowledgement' ? (
+                                                <button onClick={handleAcknowledgeSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                    Acknowledge Selected ({selectedCandidateIds.length})
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <button onClick={handleRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                        Recommend Selected ({selectedCandidateIds.length})
+                                                    </button>
+                                                    <button onClick={handleDontRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                                        Don't Recommend Selected ({selectedCandidateIds.length})
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                     {stage === 'final-shortlisting' && (
@@ -839,6 +951,82 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                     </CardContent>
                                 </Card>
                             </div>
+                        </div>
+                    ) : stage === 'final-shortlisting' && finalShortlistingTab === 'scheduling' ? (
+                        <div className="p-6">
+                            <div className="flex justify-between items-end mb-6 pb-4 border-b gap-4 flex-wrap">
+                                <div className="flex items-end gap-4 flex-wrap">
+                                     <div>
+                                        <label htmlFor="sch-dept-filter" className="text-sm font-medium text-slate-600">Department</label>
+                                        <div className="relative mt-1">
+                                            <select id="sch-dept-filter" value={schedulingDepartmentFilter} onChange={e => setSchedulingDepartmentFilter(e.target.value)} className="w-56 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
+                                                {schedulingDepartments.map(dept => <option key={dept} value={dept}>{dept}</option>)}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700"><svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="sch-sec-filter" className="text-sm font-medium text-slate-600">Section</label>
+                                        <div className="relative mt-1">
+                                            <select id="sch-sec-filter" value={schedulingSectionFilter} onChange={e => setSchedulingSectionFilter(e.target.value)} disabled={schedulingDepartmentFilter === 'All'} className="w-56 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base disabled:bg-slate-50">
+                                                {schedulingSections.map(sec => <option key={sec} value={sec}>{sec}</option>)}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700"><svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="sch-pos-filter" className="text-sm font-medium text-slate-600">Position</label>
+                                        <div className="relative mt-1">
+                                            <select id="sch-pos-filter" value={schedulingPositionFilter} onChange={e => setSchedulingPositionFilter(e.target.value)} className="w-56 appearance-none bg-white border border-slate-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-base">
+                                                {schedulingPositions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700"><svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <Card>
+                                <CardHeader>
+                                    <div className="flex justify-between items-center">
+                                        <CardTitle>Acknowledged by Department ({filteredAcknowledgedList.length})</CardTitle>
+                                        <div className="flex items-center space-x-4">
+                                            <button onClick={handleSelectAllScheduling} className="text-sm font-semibold text-blue-600 hover:underline">Select All</button>
+                                            <button onClick={handleDeselectAllScheduling} className="text-sm font-semibold text-blue-600 hover:underline">Deselect All</button>
+                                            <button onClick={handleSendForScheduling} disabled={schedulingSelectedIds.length === 0} className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-semibold text-sm flex items-center disabled:bg-gray-400">
+                                                Send for Interview Scheduling ({schedulingSelectedIds.length})
+                                            </button>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-base text-left text-gray-600">
+                                            <thead className="text-sm text-gray-700 uppercase bg-gray-50">
+                                                <tr>
+                                                    <th scope="col" className="p-4"><input type="checkbox" ref={schedulingHeaderCheckboxRef} onChange={handleSelectAllSchedulingCheckbox} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/></th>
+                                                    <th scope="col" className="px-6 py-3">Candidate Name</th>
+                                                    <th scope="col" className="px-6 py-3">Position</th>
+                                                    <th scope="col" className="px-6 py-3">Department</th>
+                                                    <th scope="col" className="px-6 py-3">Section</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {filteredAcknowledgedList.length > 0 ? filteredAcknowledgedList.map(c => (
+                                                    <tr key={c.id} className="border-b bg-white hover:bg-gray-50">
+                                                        <td className="p-4"><input type="checkbox" checked={schedulingSelectedIds.includes(c.id)} onChange={() => handleSelectSingleScheduling(c.id)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"/></td>
+                                                        <td className="px-6 py-4 font-semibold text-gray-900">{c.name}</td>
+                                                        <td className="px-6 py-4">{c.positionAppliedFor}</td>
+                                                        <td className="px-6 py-4">{c.department}</td>
+                                                        <td className="px-6 py-4">{c.section}</td>
+                                                    </tr>
+                                                )) : (
+                                                    <tr><td colSpan={5} className="text-center py-10 text-gray-500">No candidates have been acknowledged by departments yet.</td></tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">

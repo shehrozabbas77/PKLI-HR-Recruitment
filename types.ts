@@ -86,6 +86,8 @@ export type CandidateStatus =
   | 'Recommended by Department'
   | 'Rejected'
   | 'Shortlisted for Interview'
+  | 'Pending Dept. Acknowledgement'
+  | 'Acknowledged'
   | 'Recommended for Hire'
   | 'Approved for Hire'
   | 'Offer Sent'
