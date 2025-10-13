@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Candidate, CandidateStatus, JobAdvertisement } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -185,7 +186,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
     }
     
     // --- Logic for Scheduling Tab ---
-    const acknowledgedCandidates = useMemo(() => candidates.filter(c => c.status === 'Acknowledged'), [candidates]);
+    const acknowledgedCandidates = useMemo(() => candidates.filter(c => c.status === 'Acknowledged' && !c.rejectionRemarks), [candidates]);
 
     const schedulingDepartments = useMemo(() => ['All', ...Array.from(new Set(acknowledgedCandidates.map(c => c.department)))], [acknowledgedCandidates]);
     
@@ -920,7 +921,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                                                         type="checkbox"
                                                                         checked={summarySelectedIds.includes(c.id)}
                                                                         onChange={() => handleSelectSingleSummary(c.id)}
-                                                                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-200"
                                                                     />
                                                                 </td>
                                                                 <td className="px-6 py-4 font-semibold text-gray-900">{c.name}</td>

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Modal } from '../components/Modal';
 import { SelectionBoardModal } from '../components/SelectionBoardModal';
 import { ClipboardListIcon, EditIcon, MailIcon, ClockIcon, CheckIcon, UsersIcon, EyeIcon, PrinterIcon, UploadIcon } from '../components/icons';
-import { departmentSections } from '../constants';
+import { departmentSections, MOCK_PANELISTS } from '../constants';
 import { RegretLetterModal } from '../components/RegretLetterModal';
 
 // --- Candidate Comparison Component ---
@@ -451,6 +451,7 @@ interface InterviewsPageProps {
 }
 
 const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidates, selectionBoards, setSelectionBoards, activeView, advertisements, requisitions, onNavigate }) => {
+  const panelistOptions = useMemo(() => MOCK_PANELISTS.map(p => p.name), []);
   
   const [isNominationModalOpen, setIsNominationModalOpen] = useState(false);
   const [selectedCandidateForPanel, setSelectedCandidateForPanel] = useState<Candidate | null>(null);
@@ -1223,6 +1224,9 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
         onClose={() => setIsNominationModalOpen(false)} 
         title={bulkNominationJobTitle ? `Nominate Panel for ${bulkNominationJobTitle}` : `Nominate Panel for ${selectedCandidateForPanel?.name}`}
       >
+        <datalist id="panelist-options">
+            {panelistOptions.map(name => <option key={name} value={name} />)}
+        </datalist>
         <div>
             <label htmlFor="board-select" className="block text-sm font-medium text-gray-700">Select Selection Board</label>
             <select 
@@ -1253,6 +1257,7 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                 <input
                   type="text"
                   id={`panelist-${member.role}`}
+                  list="panelist-options"
                   value={panelMemberNames[member.role] || ''}
                   onChange={e => setPanelMemberNames(prev => ({ ...prev, [member.role]: e.target.value }))}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-[#0076b6] focus:border-[#0076b6]"
