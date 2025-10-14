@@ -4,7 +4,7 @@ import { Card, CardContent } from '../components/Card';
 import { Modal } from '../components/Modal';
 import { ApprovalWorkflow } from '../components/ApprovalWorkflow';
 import { ApprovalModal } from '../components/ApprovalModal';
-import { UserIcon, BuildingIcon, BriefcaseIcon, CheckIcon, XIcon, FilePlusIcon, HistoryIcon, HourglassIcon } from '../components/icons';
+import { UserIcon, BuildingIcon, BriefcaseIcon, CheckIcon, XIcon, FilePlusIcon, HistoryIcon, HourglassIcon, EditIcon } from '../components/icons';
 import { departmentSections } from '../constants';
 
 interface RequisitionProps {
@@ -165,6 +165,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
   const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [requisitionForHistory, setRequisitionForHistory] = useState<Requisition | null>(null);
+  const [editingRequisition, setEditingRequisition] = useState<Requisition | null>(null);
 
 
   const approvedJobDescriptions = jobDescriptions.filter(jd => jd.status === 'Approved');
@@ -240,12 +241,57 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
   };
 
   const handleOpenCreateModal = () => {
+    setEditingRequisition(null);
     setNewRequisitionData(initialFormData);
     setFormError('');
     setSelectedPositionStaffingInfo(null);
     setSelectedJobDescription(null);
     setIsCreateModalOpen(true);
   }
+
+  const handleEditClick = (e: React.MouseEvent, requisition: Requisition) => {
+    e.stopPropagation();
+    setEditingRequisition(requisition);
+
+    setNewRequisitionData({
+        reqId: requisition.reqId,
+        position: requisition.position,
+        department: requisition.department,
+        section: requisition.section,
+        type: requisition.type,
+        qualification: requisition.qualification,
+        experience: requisition.experience,
+        requiredSkills: requisition.requiredSkills,
+        licenseRequirement: requisition.licenseRequirement,
+        numberOfPositions: requisition.numberOfPositions,
+        jobDescription: requisition.jobDescription || '',
+        requestedBy: requisition.requestedBy,
+        fiscalYear: requisition.fiscalYear,
+        positionType: requisition.positionType,
+        budgetedStatus: requisition.budgetedStatus,
+        replacementFor: requisition.replacementFor || '',
+        justification: requisition.justification,
+        supervisorName: requisition.supervisorName,
+        supervisorUID: requisition.supervisorUID,
+        hodName: requisition.hodName,
+        hodUID: requisition.hodUID,
+    });
+    
+    const positionInfo = staffingPlan.find(p => p.designation === requisition.position && p.department === requisition.department);
+    if (positionInfo) {
+        setSelectedPositionStaffingInfo({ budgeted: positionInfo.positions2526, onBoard: positionInfo.onBoard, vacant: positionInfo.vacant });
+    } else {
+        setSelectedPositionStaffingInfo(null);
+    }
+    
+    const selectedJd = approvedJobDescriptions.find(jd => 
+        jd.designation === requisition.position && 
+        jd.department === requisition.department
+    );
+    setSelectedJobDescription(selectedJd || null);
+
+    setIsCreateModalOpen(true);
+  };
 
   useEffect(() => {
     const openModal = () => handleOpenCreateModal();
@@ -328,23 +374,39 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
         return;
     }
     
-    const newId = requisitions.length > 0 ? Math.max(...requisitions.map(r => r.id)) + 1 : 1;
+    if (editingRequisition) {
+        const updatedRequisition: Requisition = {
+            ...editingRequisition,
+            ...newRequisitionData,
+            numberOfPositions: Number(newRequisitionData.numberOfPositions),
+        };
+        
+        if (['Needs Revision', 'Rejected'].includes(updatedRequisition.status)) {
+            updatedRequisition.status = 'Pending HOD Approval';
+            updatedRequisition.approvalHistory = [{ role: 'HOD', status: 'Pending' }];
+            updatedRequisition.completionDate = undefined;
+        }
 
-    const newRequisition: Requisition = {
-        id: newId,
-        reqId: `REQ-${String(newId).padStart(3, '0')}`,
-        ...newRequisitionData,
-        numberOfPositions: Number(newRequisitionData.numberOfPositions),
-        status: 'Pending HOD Approval',
-        requestedDate: new Date().toISOString(),
-        approvalHistory: [{ role: 'HOD', status: 'Pending' }],
-        supervisorName: 'Auto-populated from JD', // These would be set based on login or more complex logic
-        supervisorUID: 'JD-UID',
-        hodName: 'Auto-populated from JD',
-        hodUID: 'JD-UID',
-    };
+        setRequisitions(prev => prev.map(r => (r.id === editingRequisition.id ? updatedRequisition : r)));
+    } else {
+        const newId = requisitions.length > 0 ? Math.max(...requisitions.map(r => r.id)) + 1 : 1;
 
-    setRequisitions(prev => [newRequisition, ...prev]);
+        const newRequisition: Requisition = {
+            id: newId,
+            reqId: `REQ-${String(newId).padStart(3, '0')}`,
+            ...newRequisitionData,
+            numberOfPositions: Number(newRequisitionData.numberOfPositions),
+            status: 'Pending HOD Approval',
+            requestedDate: new Date().toISOString(),
+            approvalHistory: [{ role: 'HOD', status: 'Pending' }],
+            supervisorName: 'Auto-populated from JD', // These would be set based on login or more complex logic
+            supervisorUID: 'JD-UID',
+            hodName: 'Auto-populated from JD',
+            hodUID: 'JD-UID',
+        };
+    
+        setRequisitions(prev => [newRequisition, ...prev]);
+    }
     setIsCreateModalOpen(false);
   };
 
@@ -445,7 +507,12 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
     }
   };
 
-  const createRequisitionModalTitle = (
+  const createRequisitionModalTitle = editingRequisition ? (
+    <div className="flex items-center">
+        <EditIcon className="w-6 h-6 mr-3 text-[#0076b6]" />
+        <span>Edit Requisition: {editingRequisition.reqId}</span>
+    </div>
+  ) : (
     <div className="flex items-center">
         <FilePlusIcon className="w-6 h-6 mr-3 text-[#0076b6]" />
         <span>New Human Resource Requisition</span>
@@ -584,6 +651,15 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                             >
                                 <HistoryIcon className="w-6 h-6" />
                             </button>
+                            {['Pending HOD Approval', 'Needs Revision', 'Rejected'].includes(req.status) && (
+                                <button
+                                    onClick={(e) => handleEditClick(e, req)}
+                                    className="text-slate-500 hover:text-green-600 p-2 rounded-full transition-colors"
+                                    title="Edit Requisition"
+                                >
+                                    <EditIcon className="w-5 h-5" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 )) : (
@@ -847,7 +923,7 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                     type="submit" 
                     className="px-8 py-3 bg-[#0076b6] text-white rounded-lg hover:bg-[#005a8c] text-base font-semibold shadow-sm hover:shadow-md transition-all"
                 >
-                    Submit Request
+                    {editingRequisition ? 'Save Changes' : 'Submit Request'}
                 </button>
             </div>
         </form>

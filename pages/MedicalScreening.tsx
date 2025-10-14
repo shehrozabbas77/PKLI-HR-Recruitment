@@ -276,6 +276,46 @@ const MedicalScreening: React.FC<MedicalScreeningProps> = ({ candidates, setCand
     setSelectedCandidate(null);
   };
   
+  const handlePrint = () => {
+    const printContent = document.getElementById('printable-form');
+    if (!printContent) {
+        console.error('Printable content not found.');
+        return;
+    }
+
+    const printWindow = window.open('', '', 'height=800,width=600');
+    if (printWindow) {
+        printWindow.document.write('<html><head><title>Pre-Employment Screening Form</title>');
+        printWindow.document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
+        printWindow.document.write('<link rel="preconnect" href="https://fonts.googleapis.com">');
+        printWindow.document.write('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>');
+        printWindow.document.write('<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">');
+        printWindow.document.write(`
+            <style>
+                body { 
+                    font-family: 'Poppins', sans-serif;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+                @page { 
+                    size: A4; 
+                    margin: 0; 
+                }
+            </style>
+        `);
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContent.innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.focus();
+
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 500);
+    }
+  };
+
   if (candidates.length === 0) {
     return (
         <Card>
@@ -359,7 +399,7 @@ const MedicalScreening: React.FC<MedicalScreeningProps> = ({ candidates, setCand
                     <InteractiveScreeningForm 
                         candidate={selectedCandidate}
                         onMarkFit={handleMarkAsFit}
-                        onPrint={() => window.print()}
+                        onPrint={handlePrint}
                     />
                 ) : (
                     <Card className="h-full">
@@ -375,29 +415,9 @@ const MedicalScreening: React.FC<MedicalScreeningProps> = ({ candidates, setCand
         </div>
     </div>
 
-    <div className="hidden print:block">
+    <div className="hidden">
         <PrintableFormLayout candidate={selectedCandidate} />
     </div>
-
-    <style>{`
-        @media print {
-            body {
-                background-color: white !important;
-                -webkit-print-color-adjust: exact; /* Chrome, Safari, Edge */
-                print-color-adjust: exact; /* Firefox */
-            }
-            .print-hidden {
-                display: none !important;
-            }
-            .print\\:block {
-                display: block !important;
-            }
-            @page {
-                size: A4;
-                margin: 0;
-            }
-        }
-    `}</style>
     </>
   );
 };

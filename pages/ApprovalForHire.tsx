@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
 import { CheckIcon, HourglassIcon } from '../components/icons';
@@ -103,6 +104,9 @@ const SalarySlabCalculator: React.FC<{
     finalSalary: number | null;
 }> = ({ level, experience, finalSalary }) => {
   
+  const years = Math.floor(experience);
+  const months = Math.round((experience - years) * 12);
+  
   const managerSlabs = [
     { years: 4, min: 287500, max: 414000, incremental: 42167 },
     { years: 5, min: 329667, max: 0, incremental: 0 },
@@ -142,11 +146,11 @@ const SalarySlabCalculator: React.FC<{
         <div className="flex gap-6 items-center mb-4 p-4 bg-gray-50 rounded-lg border">
           <div>
             <label className="block text-sm font-medium text-gray-700">Candidate's Experience</label>
-            <p className="text-2xl font-bold text-gray-800">{experience} years</p>
+            <p className="text-2xl font-bold text-gray-800">{years} years</p>
           </div>
            <div>
-            <label className="block text-sm font-medium text-gray-700">Rounded Experience</label>
-            <p className="text-2xl font-bold text-gray-800">{roundedExp} years</p>
+            <label className="block text-sm font-medium text-gray-700">Months</label>
+            <p className="text-2xl font-bold text-gray-800">{months} months</p>
           </div>
           <div className="flex-grow">
             <label className="block text-sm font-medium text-gray-700">Calculated Salary</label>
