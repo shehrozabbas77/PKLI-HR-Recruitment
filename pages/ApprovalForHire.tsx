@@ -168,6 +168,7 @@ const SalarySlabCalculator: React.FC<{
               <th className="px-4 py-2">Years of Exp.</th>
               <th className="px-4 py-2">Min Salary</th>
               <th className="px-4 py-2">Max Salary</th>
+              <th className="px-4 py-2">Difference</th>
               <th className="px-4 py-2">Incremental Amount</th>
             </tr>
           </thead>
@@ -177,6 +178,7 @@ const SalarySlabCalculator: React.FC<{
                 <td className="px-4 py-2">{slab.years}</td>
                 <td className="px-4 py-2">{slab.min.toLocaleString('en-US')}</td>
                 <td className="px-4 py-2">{slab.max > 0 ? slab.max.toLocaleString('en-US') : '-'}</td>
+                <td className="px-4 py-2">{slab.max > 0 ? (slab.max - slab.min).toLocaleString('en-US') : '-'}</td>
                 <td className="px-4 py-2">{slab.incremental > 0 ? slab.incremental.toLocaleString('en-US') : '-'}</td>
               </tr>
             ))}

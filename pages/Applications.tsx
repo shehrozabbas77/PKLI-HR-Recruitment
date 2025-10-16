@@ -35,7 +35,7 @@ const stageConfig = {
     collection: {
         title: 'Application Data Collection',
         description: 'A comprehensive view of all candidates from initial application through final shortlisting.',
-        filters: ['All', 'New', 'Under Review', 'Sent to Dept', 'Dept. Recommended', 'Rejected'],
+        filters: ['All', 'New', 'Under Review', 'Sent to Dept', 'Dept. Recommended'],
         initialFilter: 'All',
         statuses: ['New', 'Under Review', 'Sent to Department', 'Recommended by Department'],
     },
@@ -258,7 +258,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         return candidates.filter(c => {
             const preInterviewStatuses: CandidateStatus[] = [
                 'New', 'Under Review', 'Sent to Department',
-                'Recommended by Department', 'Rejected',
+                'Recommended by Department',
                 'Pending Dept. Acknowledgement', 'Acknowledged'
             ];
 
@@ -502,10 +502,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
         if (stage === 'collection') {
             if (['New', 'Under Review'].includes(candidate.status)) {
                 return (
-                    <>
-                        <button onClick={() => handleStatusChange(candidate.id, 'Sent to Department')} className={`${actionButtonClass} bg-[#0076b6] hover:bg-[#005a8c]`}>Send to Dept</button>
-                        <button onClick={() => handleRejectClick(candidate)} className={`${actionButtonClass} bg-[#c01823] hover:bg-[#9a131c]`}>Reject</button>
-                    </>
+                    <button onClick={() => handleStatusChange(candidate.id, 'Sent to Department')} className={`${actionButtonClass} bg-[#0076b6] hover:bg-[#005a8c]`}>Send to Dept</button>
                 );
             }
         } else if (stage === 'department-review') {

@@ -790,6 +790,31 @@ export const mockAdvertisements: JobAdvertisement[] = [
     ],
     publishedOn: '2025-02-15',
   },
+  {
+    id: 5,
+    title: 'Q1 2026 - Nursing Staff (Draft)',
+    status: 'Draft',
+    positions: [
+      {
+        reqId: 9,
+        position: 'Charge Nurse',
+        qualification: 'BScN or Diploma',
+        experience: '3+ years',
+        numberOfPositions: 2,
+        department: 'Medical Services',
+        section: 'Nursing',
+      },
+    ],
+    applicationFeeDoctors: 3000,
+    applicationFeeOthers: 1000,
+    deadline: '2026-03-31',
+    notes: [
+      'Only ONLINE applications will be entertained.',
+      'Employees from Government Institutes must send their application along with fresh NOC, issued by the concerned department.',
+      'Applications after the due date will not be entertained.',
+      'PKLI&RC is an \'Equal Opportunity Employer\'.',
+    ],
+  },
 ];
 
 export const MOCK_PANELISTS: PanelMember[] = [
@@ -1057,5 +1082,18 @@ export const mockCandidates: Candidate[] = [
         status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director', role: 'Chairperson', status: 'Available', notified: true }],
         interviewStatus: 'Scheduled', interviewTime: `${new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]}T14:00`,
         attendanceStatus: 'Present', documentChecklist: { 'Original CNIC': true, 'Updated CV / Resume (x2)': true }
+    },
+    // Candidates to fill demo gaps
+    {
+        id: 301, name: 'Rehan Sheikh', positionAppliedFor: 'Admin Officer', department: 'Administration', section: 'General Administration', cnic: '35201-1234567-0', qualification: 'MPA', experienceYears: 6, organization: 'Govt. Sector', contact: '0300-1110000', city: 'Lahore', remarks: 'Offer was sent but candidate rejected due to a better offer.', status: 'Rejected', panelNominationStatus: 'Panel Nominated', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-03-12', finalSalary: 160000, offerEvidence: 'Rejection_Email.pdf', rejectionRemarks: 'Candidate rejected the offer via email.'
+    },
+    {
+        id: 302, name: 'Fatima Jilani', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-2345678-1', qualification: 'BScN', experienceYears: 3, organization: 'Shalamar Hospital', contact: '0301-2221111', city: 'Lahore', remarks: 'HR finalized shortlist, pending department acknowledgement.', status: 'Pending Dept. Acknowledgement', panelNominationStatus: 'Pending Nomination', interviewPanel: [], shortlistingRemarks: 'Strong candidate, recommended by HR.', preInterviewFormSent: false, adReference: 'AD-3', appliedDate: '2025-04-18'
+    },
+    {
+        id: 303, name: 'Zain Imam', positionAppliedFor: 'Staff Nurse', department: 'Medical Services', section: 'Nursing', cnic: '35201-3456789-2', qualification: 'BScN', experienceYears: 5, organization: 'Fatima Memorial', contact: '0302-3332222', city: 'Lahore', remarks: 'Acknowledged by department, ready for interview scheduling.', status: 'Acknowledged', panelNominationStatus: 'Pending Nomination', interviewPanel: [], shortlistingRemarks: 'HR and Department both agree on shortlisting.', preInterviewFormSent: false, adReference: 'AD-3', appliedDate: '2025-04-19'
+    },
+    {
+        id: 304, name: 'Kamran Akmal', positionAppliedFor: 'Network Administrator', department: 'ICT', section: 'Infrastructure', cnic: '35201-4567890-3', qualification: 'BS IT', experienceYears: 2, organization: 'Small ISP', contact: '0303-4443333', city: 'Lahore', remarks: 'Candidate was not a good fit for the team.', status: 'Rejected', panelNominationStatus: 'Pending Nomination', interviewPanel: [], rejectionRemarks: 'Not recommended by department: Lacks enterprise-level experience.', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-26'
     }
 ];
