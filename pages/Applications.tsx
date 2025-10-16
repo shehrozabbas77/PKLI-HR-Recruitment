@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Candidate, CandidateStatus, JobAdvertisement } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -42,7 +41,7 @@ const stageConfig = {
     'department-review': {
         title: 'Departmental Review & Shortlisting',
         description: 'Review candidates sent by HR and provide shortlisting recommendations.',
-        filters: ['All', 'Pending Review', 'Pending Acknowledgement', 'Recommended', 'Rejected'],
+        filters: ['All', 'Pending Review', 'Pending Acknowledgement', 'Shortlisted', 'Not Shortlisted'],
         initialFilter: 'Pending Review',
         // Show candidates sent to the dept and those they have recommended or rejected at this stage.
         statuses: ['Sent to Department', 'Recommended by Department', 'Pending Dept. Acknowledgement', 'Acknowledged'],
@@ -360,13 +359,12 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                 if (filter === 'Under Review') return c.status === 'Under Review';
                 if (filter === 'Sent to Dept') return c.status === 'Sent to Department';
                 if (filter === 'Dept. Recommended') return c.status === 'Recommended by Department';
-                if (filter === 'Rejected') return c.status === 'Rejected';
+                if (filter === 'Rejected' || filter === 'Not Shortlisted') return c.status === 'Rejected';
                 
                 if (filter === 'Pending Review') return c.status === 'Sent to Department';
                 if (filter === 'Pending Acknowledgement') return c.status === 'Pending Dept. Acknowledgement';
-                if (filter === 'Recommended') return c.status === 'Recommended by Department';
                 if (filter === 'Ready to Finalize') return c.status === 'Recommended by Department';
-                if (filter === 'Shortlisted') return c.status === 'Shortlisted for Interview';
+                if (filter === 'Shortlisted') return c.status === 'Recommended by Department' || c.status === 'Shortlisted for Interview';
                 return true;
             };
             
@@ -381,6 +379,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
             const checkPosition = (positionFilter === 'All' || c.positionAppliedFor === positionFilter);
 
             return checkFilter() && checkSearch() && checkDepartment && checkSection && checkPosition;
+
         });
 
     }, [stageCandidates, filter, searchTerm, departmentFilter, sectionFilter, positionFilter, stage, dataFetchedForAd]);
@@ -509,8 +508,8 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
              if (candidate.status === 'Sent to Department') {
                 return (
                     <>
-                        <button onClick={() => handleStatusChange(candidate.id, 'Recommended by Department')} className={`${actionButtonClass} bg-green-500 hover:bg-green-600`}>Recommend</button>
-                        <button onClick={() => handleRejectClick(candidate)} className={`${actionButtonClass} bg-orange-500 hover:bg-orange-600`}>Don't Recommend</button>
+                        <button onClick={() => handleStatusChange(candidate.id, 'Recommended by Department')} className={`${actionButtonClass} bg-green-500 hover:bg-green-600`}>Shortlisted</button>
+                        <button onClick={() => handleRejectClick(candidate)} className={`${actionButtonClass} bg-orange-500 hover:bg-orange-600`}>Not Shortlisted</button>
                     </>
                 );
             } else if (candidate.status === 'Pending Dept. Acknowledgement') {
@@ -756,10 +755,10 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                             ) : (
                                                 <>
                                                     <button onClick={handleRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                                        Recommend Selected ({selectedCandidateIds.length})
+                                                        Shortlist Selected ({selectedCandidateIds.length})
                                                     </button>
                                                     <button onClick={handleDontRecommendSelected} disabled={selectedCandidateIds.length === 0} className="px-3 py-1 text-sm font-semibold text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                                                        Don't Recommend Selected ({selectedCandidateIds.length})
+                                                        Don't Shortlist Selected ({selectedCandidateIds.length})
                                                     </button>
                                                 </>
                                             )}
@@ -1038,7 +1037,7 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
                                                     ref={headerCheckboxRef}
                                                     onChange={handleSelectAll}
                                                     disabled={selectableCandidates.length === 0}
-                                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
                                                 />
                                             </th>
                                         )}

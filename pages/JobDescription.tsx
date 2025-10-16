@@ -546,30 +546,41 @@ const JobDescriptionPage: React.FC<JobDescriptionPageProps> = ({ jobDescriptions
                         {jd.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center space-x-2">
-                        <button
-                            onClick={() => handleViewDetails(jd)}
-                            className="text-gray-500 hover:text-blue-600 p-1 rounded-full transition-colors inline-block"
-                            title="View Details"
-                        >
-                            <EyeIcon className="w-6 h-6" />
-                        </button>
-                         <button
-                            onClick={(e) => handleViewHistory(e, jd)}
-                            className="text-gray-500 hover:text-indigo-600 p-1 rounded-full transition-colors inline-block"
-                            title="View Approval History"
-                        >
-                            <HistoryIcon className="w-6 h-6" />
-                        </button>
-                        {['Pending HOD Approval', 'Needs Revision', 'Rejected'].includes(jd.status) && (
-                            <button
-                                onClick={(e) => handleEditClick(e, jd)}
-                                className="text-gray-500 hover:text-green-600 p-1 rounded-full transition-colors inline-block"
-                                title="Edit Details"
-                            >
-                                <EditIcon className="w-5 h-5" />
-                            </button>
-                        )}
+                    <td className="px-6 py-4 text-center">
+                        <div className="flex justify-center items-start space-x-4">
+                            <div className="flex flex-col items-center">
+                                <button
+                                    onClick={() => handleViewDetails(jd)}
+                                    className="text-gray-500 hover:text-blue-600 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                                    title="View Details"
+                                >
+                                    <EyeIcon className="w-6 h-6" />
+                                </button>
+                                <span className="text-xs text-gray-500 mt-1">View Details</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <button
+                                    onClick={(e) => handleViewHistory(e, jd)}
+                                    className="text-gray-500 hover:text-indigo-600 p-1 rounded-full hover:bg-indigo-50 transition-colors"
+                                    title="View Approval History"
+                                >
+                                    <HistoryIcon className="w-6 h-6" />
+                                </button>
+                                <span className="text-xs text-gray-500 mt-1">View Approval History</span>
+                            </div>
+                            {['Pending HOD Approval', 'Needs Revision', 'Rejected'].includes(jd.status) && (
+                                <div className="flex flex-col items-center">
+                                    <button
+                                        onClick={(e) => handleEditClick(e, jd)}
+                                        className="text-gray-500 hover:text-green-600 p-1 rounded-full hover:bg-green-50 transition-colors"
+                                        title="Edit Details"
+                                    >
+                                        <EditIcon className="w-5 h-5" />
+                                    </button>
+                                    <span className="text-xs text-gray-500 mt-1">Edit</span>
+                                </div>
+                            )}
+                        </div>
                     </td>
                   </tr>
                 ))}

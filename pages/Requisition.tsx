@@ -643,23 +643,31 @@ const RequisitionPage: React.FC<RequisitionProps> = ({ requisitions, setRequisit
                                 })()}
                             </div>
                         </div>
-                         <div className="col-span-1 px-4 flex items-center justify-center h-full">
-                            <button
-                                onClick={(e) => handleViewHistory(e, req)}
-                                className="text-slate-500 hover:text-indigo-600 p-2 rounded-full transition-colors"
-                                title="View Approval History"
-                            >
-                                <HistoryIcon className="w-6 h-6" />
-                            </button>
-                            {['Pending HOD Approval', 'Needs Revision', 'Rejected'].includes(req.status) && (
-                                <button
-                                    onClick={(e) => handleEditClick(e, req)}
-                                    className="text-slate-500 hover:text-green-600 p-2 rounded-full transition-colors"
-                                    title="Edit Requisition"
-                                >
-                                    <EditIcon className="w-5 h-5" />
-                                </button>
-                            )}
+                         <div className="col-span-1 px-4 flex items-start justify-center h-full pt-6">
+                            <div className="flex justify-center items-start space-x-4">
+                                <div className="flex flex-col items-center">
+                                    <button
+                                        onClick={(e) => handleViewHistory(e, req)}
+                                        className="text-slate-500 hover:text-indigo-600 p-1 rounded-full hover:bg-indigo-50 transition-colors"
+                                        title="View Approval History"
+                                    >
+                                        <HistoryIcon className="w-6 h-6" />
+                                    </button>
+                                    <span className="text-xs text-gray-500 mt-1 text-center">View Approval History</span>
+                                </div>
+                                {['Pending HOD Approval', 'Needs Revision', 'Rejected'].includes(req.status) && (
+                                    <div className="flex flex-col items-center">
+                                        <button
+                                            onClick={(e) => handleEditClick(e, req)}
+                                            className="text-slate-500 hover:text-green-600 p-1 rounded-full hover:bg-green-50 transition-colors"
+                                            title="Edit Requisition"
+                                        >
+                                            <EditIcon className="w-5 h-5" />
+                                        </button>
+                                        <span className="text-xs text-gray-500 mt-1">Edit</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )) : (

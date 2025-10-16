@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import type { StaffingPosition, Requisition, Candidate } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/Card';
@@ -36,7 +35,7 @@ const StatCard: React.FC<{ title: string; value: string; type: keyof typeof stat
 );
 
 
-const DonutChart: React.FC<{ data: { name: string; value: number; color: string }[] }> = ({ data }) => {
+const DonutChart: React.FC<{ data: { name: string; value: number; color: string }[], onNavigate?: () => void }> = ({ data, onNavigate }) => {
     const total = data.reduce((sum, item) => sum + item.value, 0);
     if (total === 0) {
         return <div className="flex items-center justify-center h-full text-slate-500">No data available</div>;
@@ -47,7 +46,11 @@ const DonutChart: React.FC<{ data: { name: string; value: number; color: string 
 
     return (
         <div className="flex items-center justify-center space-x-8 py-4">
-            <div className="relative w-40 h-40">
+            <button
+                onClick={onNavigate}
+                disabled={!onNavigate}
+                className="relative w-40 h-40 rounded-full group disabled:cursor-default"
+            >
                  <svg width="160" height="160" viewBox="0 0 120 120" className="-rotate-90">
                     <circle r={radius} cx="60" cy="60" fill="transparent" stroke="#e5e7eb" strokeWidth="20" />
                     {data.map(item => {
@@ -70,17 +73,22 @@ const DonutChart: React.FC<{ data: { name: string; value: number; color: string 
                         );
                     })}
                 </svg>
-                 <div className="absolute inset-0 flex flex-col items-center justify-center">
+                 <div className="absolute inset-0 flex flex-col items-center justify-center transition-transform group-hover:scale-105 group-disabled:transform-none">
                     <span className="text-3xl font-bold text-slate-800">{total}</span>
                     <span className="text-sm text-slate-500">Total</span>
                 </div>
-            </div>
+            </button>
             <div className="space-y-3">
                 {data.map(item => (
-                    <div key={item.name} className="flex items-center">
+                    <button
+                        key={item.name}
+                        onClick={onNavigate}
+                        disabled={!onNavigate}
+                        className="flex items-center w-full text-left p-1 rounded-md transition-colors hover:bg-slate-100 disabled:cursor-default disabled:hover:bg-transparent"
+                    >
                         <span className="w-3.5 h-3.5 rounded-full mr-3" style={{ backgroundColor: item.color }}></span>
                         <span className="text-sm font-medium text-slate-700">{item.name} ({item.value})</span>
-                    </div>
+                    </button>
                 ))}
             </div>
         </div>
@@ -167,21 +175,23 @@ const Dashboard: React.FC<DashboardProps> = ({ staffingPlan, requisitions, candi
     }, [staffingPlan]);
 
     const recruitmentFunnelData = useMemo(() => {
-        const stages = {
-            'New Applications': ['New', 'Under Review'],
-            'Department Review': ['Sent to Department'],
-            'Shortlisted': ['Recommended by Department', 'Shortlisted for Interview'],
-            'Interview & Approval': ['Recommended for Hire', 'Approved for Hire'],
-            'Offer Stage': ['Offer Sent', 'Offer Accepted', 'Pending Verification'],
+        const stages: Record<string, { statuses: string[], stepId: number }> = {
+            'New Applications': { statuses: ['New', 'Under Review'], stepId: 6 },
+            'Department Review': { statuses: ['Sent to Department', 'Pending Dept. Acknowledgement', 'Acknowledged'], stepId: 7 },
+            'Shortlisted': { statuses: ['Recommended by Department', 'Shortlisted for Interview'], stepId: 8 },
+            'Interview & Approval': { statuses: ['Recommended for Hire', 'Approved for Hire'], stepId: 10 },
+            'Offer Stage': { statuses: ['Offer Sent', 'Offer Accepted', 'Pending Verification'], stepId: 15 },
         };
-        const totalInProcess = candidates.filter(c => Object.values(stages).flat().includes(c.status)).length || 1;
+        const allStatuses = Object.values(stages).flatMap(s => s.statuses);
+        const totalInProcess = candidates.filter(c => allStatuses.includes(c.status)).length || 1;
 
-        return Object.entries(stages).map(([name, statuses]) => {
-            const count = candidates.filter(c => statuses.includes(c.status)).length;
+        return Object.entries(stages).map(([name, data]) => {
+            const count = candidates.filter(c => data.statuses.includes(c.status)).length;
             return {
                 name,
                 count,
-                percentage: (count / totalInProcess) * 100
+                percentage: (count / totalInProcess) * 100,
+                stepId: data.stepId
             };
         });
     }, [candidates]);
@@ -203,16 +213,27 @@ const Dashboard: React.FC<DashboardProps> = ({ staffingPlan, requisitions, candi
         }, {} as Record<string, number>);
 
         const colors: Record<string, string> = {
-            'Pending HOD Approval': '#f97316',
             'Pending Director/Dean Approval': '#6366f1',
+            'Pending HOD Approval': '#f97316',
             'Pending HR Review': '#a855f7',
+            'Needs Revision': '#6b7280',
         };
+        
+        const statusOrder = [
+            'Pending Director/Dean Approval',
+            'Pending HOD Approval',
+            'Pending HR Review',
+            'Needs Revision'
+        ];
 
-        return Object.entries(counts).map(([name, value]) => ({ 
-            name, 
-            value,
-            color: colors[name] || '#6b7280'
-        }));
+        return statusOrder
+            .filter(status => counts[status]) // only include statuses that exist in the data
+            .map(name => ({ 
+                name, 
+                value: counts[name],
+                color: colors[name]
+            }));
+
     }, [requisitions]);
 
     return (
@@ -297,17 +318,22 @@ const Dashboard: React.FC<DashboardProps> = ({ staffingPlan, requisitions, candi
                         <CardDescription>Current candidate pipeline status.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-5">
+                        <div className="space-y-2">
                             {recruitmentFunnelData.map((stage) => (
-                                <div key={stage.name}>
+                                <button
+                                    key={stage.name}
+                                    onClick={() => onNavigate(stage.stepId)}
+                                    className="block w-full text-left p-3 rounded-lg hover:bg-slate-100 transition-colors"
+                                    aria-label={`Navigate to ${stage.name}`}
+                                >
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-sm font-medium text-slate-700">{stage.name}</span>
                                         <span className="text-sm font-bold text-slate-800">{stage.count}</span>
                                     </div>
                                     <div className="w-full bg-slate-200 rounded-full h-2.5">
-                                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${stage.percentage}%` }}></div>
+                                        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: `${stage.percentage}%` }}></div>
                                     </div>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     </CardContent>
@@ -321,7 +347,7 @@ const Dashboard: React.FC<DashboardProps> = ({ staffingPlan, requisitions, candi
                         <CardDescription>A summary of all budgeted positions.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <DonutChart data={positionStatusData} />
+                        <DonutChart data={positionStatusData} onNavigate={() => onNavigate(2)} />
                     </CardContent>
                 </Card>
                 
@@ -332,7 +358,7 @@ const Dashboard: React.FC<DashboardProps> = ({ staffingPlan, requisitions, candi
                     </CardHeader>
                     <CardContent>
                          {requisitionStatusData.length > 0 ? (
-                            <DonutChart data={requisitionStatusData} />
+                            <DonutChart data={requisitionStatusData} onNavigate={() => onNavigate(4)} />
                         ) : (
                             <p className="text-center text-slate-500 py-8">No active requisitions.</p>
                         )}

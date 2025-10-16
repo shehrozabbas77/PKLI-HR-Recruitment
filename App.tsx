@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { NAVIGATION_STRUCTURE, ALL_STEPS, SELECTION_BOARDS } from './constants';
 import Dashboard from './pages/Dashboard';
@@ -32,6 +31,7 @@ const processedStaffingPlan = mockStaffingPlan.map(position => ({
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(1);
+  const [navigationHistory, setNavigationHistory] = useState<number[]>([]);
   const [staffingPlan, setStaffingPlan] = useState<StaffingPosition[]>(processedStaffingPlan);
   const [jobDescriptions, setJobDescriptions] = useState<JobDescriptionType[]>(mockJobDescriptions);
   const [requisitions, setRequisitions] = useState<Requisition[]>(mockRequisitions);
@@ -40,11 +40,26 @@ const App: React.FC = () => {
   const [advertisements, setAdvertisements] = useState<JobAdvertisementType[]>(mockAdvertisements);
   const [selectionBoards, setSelectionBoards] = useState<SelectionBoard[]>(SELECTION_BOARDS);
 
+  const navigateTo = (step: number) => {
+    if (step !== activeStep) {
+      setNavigationHistory(prev => [...prev, activeStep]);
+      setActiveStep(step);
+    }
+  };
+
+  const handleGoBack = () => {
+    if (navigationHistory.length > 0) {
+      const previousStep = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
+      setActiveStep(previousStep);
+    }
+  };
+
   const handleNavigate = (step: number, department?: string) => {
     if (department) {
       setSelectedDepartment(department);
     }
-    setActiveStep(step);
+    navigateTo(step);
   };
 
   const renderContent = () => {
@@ -143,12 +158,25 @@ const App: React.FC = () => {
 
   return (
     <div className="h-screen bg-slate-50 flex flex-col">
-      <Header activeStep={activeStep} setActiveStep={setActiveStep} steps={NAVIGATION_STRUCTURE} />
+      <Header activeStep={activeStep} setActiveStep={navigateTo} steps={NAVIGATION_STRUCTURE} />
       <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-6 lg:p-8">
         <div className="mb-8 flex justify-between items-center print-hidden">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{activeStepInfo?.title || ''}</h2>
-            <p className="text-base text-slate-500 mt-1 max-w-2xl">{activeStepInfo?.description || ''}</p>
+          <div className="flex items-center gap-4">
+            {navigationHistory.length > 0 && activeStep !== 1 && (
+              <button
+                onClick={handleGoBack}
+                className="p-2 bg-white rounded-full shadow-md hover:bg-slate-100 transition-colors border border-slate-200 group"
+                title="Go back"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-600 group-hover:text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+            )}
+            <div>
+              <h2 className="text-3xl font-bold text-slate-900 tracking-tight">{activeStepInfo?.title || ''}</h2>
+              <p className="text-base text-slate-500 mt-1 max-w-2xl">{activeStepInfo?.description || ''}</p>
+            </div>
           </div>
           {activeStep === 4 && (
              <button 
