@@ -1,6 +1,7 @@
 
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import type { StaffingPosition } from '../types';
 import { PositionStatus } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/Card';
@@ -148,7 +149,71 @@ const StaffingPlan: React.FC<StaffingPlanProps> = ({ positions, setPositions, in
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      alert(`File "${file.name}" selected. In a real application, its content would be processed and added to the plan.`);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          if (!data) {
+            alert("Failed to read file data.");
+            return;
+          }
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const json: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+          setPositions(prevPositions => {
+            const maxId = prevPositions.length > 0 ? Math.max(...prevPositions.map(p => p.id)) : 0;
+
+            const newPositions: StaffingPosition[] = json.map((row, index) => {
+                const minSalary = Number(row['Min Salary'] || row['minSalary'] || 0);
+                const maxSalary = Number(row['Max Salary'] || row['maxSalary'] || 0);
+                const positions2526 = Number(row['Positions 25-26'] || row['positions2526'] || 0);
+                const onBoard = Number(row['On Board'] || row['onBoard'] || 0);
+                
+                const weightedAvgSalary = (minSalary * 0.75) + (maxSalary * 0.25);
+                const vacant = positions2526 - onBoard;
+
+                const statusString = row['Status'] || row['status'] || PositionStatus.Normal;
+                const status = Object.values(PositionStatus).includes(statusString as PositionStatus) 
+                ? statusString as PositionStatus 
+                : PositionStatus.Normal;
+
+                return {
+                    id: maxId + index + 1,
+                    department: row['Department'] || row['department'] || '',
+                    section: row['Section'] || row['section'] || '',
+                    designation: row['Designation'] || row['designation'] || '',
+                    minSalary,
+                    maxSalary,
+                    weightedAvgSalary,
+                    positions2526,
+                    onBoard,
+                    vacant,
+                    positions2627: Number(row['Positions 26-27'] || row['positions2627'] || 0),
+                    remarks: row['Remarks'] || row['remarks'] || '',
+                    status,
+                    date: (status !== PositionStatus.Normal && (row['Date'] || row['date'])) ? new Date(row['Date'] || row['date']).toISOString().split('T')[0] : undefined,
+                };
+            }).filter(p => p.designation && p.department);
+
+            if (newPositions.length > 0) {
+              alert(`${newPositions.length} positions have been successfully uploaded and added to the plan.`);
+              return [...prevPositions, ...newPositions];
+            } else {
+              alert("No valid positions found in the uploaded file. Please check the file format and column headers (e.g., 'Designation', 'Min Salary').");
+              return prevPositions;
+            }
+          });
+
+        } catch (error) {
+          console.error("Error parsing file:", error);
+          alert("There was an error parsing the file. Please ensure it is a valid .xlsx or .csv file with correct headers.");
+        }
+      };
+      
+      reader.readAsBinaryString(file);
+
       if (event.target) {
         event.target.value = '';
       }

@@ -77,14 +77,14 @@ export const departmentSupervisors: { [key: string]: string } = {
     'Medical Services': 'Dr. Ahmad (Supervisor)',
     'Administration': 'Admin Manager',
     'Finance': 'CFO',
-    'Human Resource': 'Director HR'
+    'Human Resource': 'Head of HR'
 };
 
 export const mockStaffingPlan: StaffingPosition[] = [
     // ICT Department
     { id: 2, department: 'ICT', section: 'Management', designation: 'Senior Manager', minSalary: 250000, maxSalary: 350000, weightedAvgSalary: 275000, positions2526: 2, onBoard: 1, vacant: 1, positions2627: 2, remarks: '1 Vacancy', status: PositionStatus.Normal },
     { id: 3, department: 'ICT', section: 'Management', designation: 'Manager', minSalary: 180000, maxSalary: 250000, weightedAvgSalary: 197500, positions2526: 3, onBoard: 2, vacant: 0, positions2627: 3, remarks: '1 Resigned', status: PositionStatus.Resigned, date: '2024-08-15' },
-    { id: 4, department: 'ICT', section: 'Management', designation: 'Assistant Managers', minSalary: 120000, maxSalary: 180000, weightedAvgSalary: 135000, positions2526: 4, onBoard: 3, vacant: 1, positions2627: 4, remarks: '1 position open for hiring', status: PositionStatus.Normal },
+    { id: 4, department: 'ICT', section: 'Management', designation: 'Assistant Manager', minSalary: 120000, maxSalary: 180000, weightedAvgSalary: 135000, positions2526: 4, onBoard: 3, vacant: 1, positions2627: 4, remarks: '1 position open for hiring', status: PositionStatus.Normal },
     { id: 6, department: 'ICT', section: 'Infrastructure', designation: 'Sr. Database Administrator', minSalary: 150000, maxSalary: 220000, weightedAvgSalary: 167500, positions2526: 1, onBoard: 0, vacant: 1, positions2627: 1, remarks: 'Critical position vacant', status: PositionStatus.Normal },
     { id: 7, department: 'ICT', section: 'Infrastructure', designation: 'Database Administrator', minSalary: 100000, maxSalary: 150000, weightedAvgSalary: 112500, positions2526: 2, onBoard: 2, vacant: 0, positions2627: 2, remarks: 'Team is full', status: PositionStatus.Normal },
     { id: 8, department: 'ICT', section: 'Software Development', designation: 'Software Engineer', minSalary: 90000, maxSalary: 140000, weightedAvgSalary: 102500, positions2526: 5, onBoard: 3, vacant: 2, positions2627: 5, remarks: 'Reappropriated from Analyst', status: PositionStatus.Created, date: '2024-05-10' },
@@ -111,207 +111,522 @@ export const mockStaffingPlan: StaffingPosition[] = [
     { id: 22, department: 'Finance', section: 'Accounts', designation: 'Accountant', minSalary: 80000, maxSalary: 120000, weightedAvgSalary: 90000, positions2526: 5, onBoard: 4, vacant: 1, positions2627: 5, remarks: '1 vacancy due to promotion', status: PositionStatus.Normal },
 
     // Human Resource Department
-    { id: 24, department: 'Human Resource', section: 'Operations', designation: 'Director HR', minSalary: 350000, maxSalary: 500000, weightedAvgSalary: 387500, positions2526: 1, onBoard: 1, vacant: 0, positions2627: 1, remarks: 'Filled', status: PositionStatus.Normal },
+    { id: 24, department: 'Human Resource', section: 'Operations', designation: 'Head of HR', minSalary: 350000, maxSalary: 500000, weightedAvgSalary: 387500, positions2526: 1, onBoard: 1, vacant: 0, positions2627: 1, remarks: 'Filled', status: PositionStatus.Normal },
     { id: 25, department: 'Human Resource', section: 'Talent Acquisition', designation: 'HR Officer', minSalary: 70000, maxSalary: 110000, weightedAvgSalary: 80000, positions2526: 3, onBoard: 2, vacant: 1, positions2627: 3, remarks: 'Need one more officer for recruitment.', status: PositionStatus.Normal },
 ];
 
 export const mockJobDescriptions: JobDescription[] = [
+  // --- ICT Department ---
   {
     id: 1,
     designation: 'Senior Manager',
     department: 'ICT',
     section: 'Management',
     reportsTo: ['Chief Information Officer'],
-    reportingPositions: ['Manager (x3)', 'Assistant Manager (x4)'],
-    qualification: ['MBA', 'Masters in IT'],
-    skills: ['Project Management', 'Budgeting', 'Team Leadership', 'Strategic Planning'],
-    experience: '10+ years in IT leadership with a proven track record.',
+    reportingPositions: ['Manager (ICT)'],
+    qualification: ['Masters in IT', 'MBA'],
+    skills: ['Strategic Planning', 'Budgeting', 'Project Management', 'Leadership'],
+    experience: '12+ years in IT with 5+ years in a management role.',
     registrationLicense: ['N/A'],
-    jobSummary: 'To lead the ICT department, manage technology operations, and implement IT strategies that align with organizational goals.',
-    jobFunctions: ['Oversee all technology operations and evaluate them according to established goals.', 'Devise and establish IT policies and systems to support the implementation of strategies set by upper management.', 'Analyze the business requirements of all departments to determine their technology needs.'],
+    jobSummary: 'Lead the ICT department operations, develop IT strategy, and manage the technology portfolio to support organizational goals.',
+    jobFunctions: ['Oversee IT infrastructure and software development.', 'Manage IT budget and vendor relationships.', 'Ensure cybersecurity and data integrity.'],
     status: 'Approved',
     preparedBy: 'Mr. Ali (CIO)',
-    preparedDate: '2025-09-20',
+    preparedDate: '2025-10-01',
     approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Mr. Ali', date: '2025-09-20' },
-      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali', date: '2025-09-21' },
-      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-09-22' }
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
   {
     id: 2,
-    designation: 'Sr. Database Administrator',
+    designation: 'Manager',
     department: 'ICT',
-    section: 'Infrastructure',
+    section: 'Management',
     reportsTo: ['Senior Manager'],
-    reportingPositions: ['Database Administrator (x2)'],
-    qualification: ['BSCS'],
-    skills: ['Database tuning', 'Performance monitoring', 'Backups', 'Recovery', 'Security'],
-    experience: '5+ years of hands-on experience with Oracle and SQL Server.',
-    registrationLicense: ['Oracle Certified Professional (OCP)'],
-    jobSummary: 'Manage and maintain the hospital\'s critical database systems to ensure high levels of performance, availability, and security.',
-    jobFunctions: ['Install, configure, and maintain database management systems.', 'Develop and implement backup and recovery plans.', 'Monitor database performance and tune as necessary.'],
+    reportingPositions: ['Assistant Manager'],
+    qualification: ['BSCS', 'MBA IT'],
+    skills: ['Project Management', 'Team Leadership', 'Agile Methodologies'],
+    experience: '8+ years in IT with 3+ years in a supervisory role.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'Manage and lead a team of IT professionals, ensuring projects are delivered on time, within scope, and on budget.',
+    jobFunctions: ['Oversee daily operations of the assigned IT section.', 'Coordinate with stakeholders to define project requirements.', 'Mentor and develop team members.'],
     status: 'Approved',
-    preparedBy: 'Senior Manager ICT',
-    preparedDate: '2025-09-22',
+    preparedBy: 'Senior Manager',
+    preparedDate: '2025-10-01',
     approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Senior Manager ICT', date: '2025-09-22' },
-      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali', date: '2025-09-23' },
-      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-09-24' }
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Senior Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
   {
     id: 3,
-    designation: 'Software Engineer',
+    designation: 'Assistant Manager',
     department: 'ICT',
-    section: 'Software Development',
-    reportsTo: ['Manager Software Development'],
-    reportingPositions: [],
-    qualification: ["Bachelors in Computer Science"],
-    skills: ['React', 'Node.js', 'TypeScript', 'RESTful APIs', 'Git'],
-    experience: 'Minimum 2 years of professional experience in web development.',
+    section: 'Management',
+    reportsTo: ['Manager'],
+    reportingPositions: ['Team Leads'],
+    qualification: ['BSCS'],
+    skills: ['Supervision', 'Problem Solving', 'Technical Support'],
+    experience: '5+ years in a relevant IT field.',
     registrationLicense: ['N/A'],
-    jobSummary: 'Design, develop, and maintain web applications for the hospital\'s internal systems.',
-    jobFunctions: ['Write clean, scalable, and well-documented code.', 'Collaborate with cross-functional teams to define, design, and ship new features.', 'Troubleshoot and debug applications.'],
+    jobSummary: 'Assist the IT Manager in overseeing daily operations and managing IT projects and staff.',
+    jobFunctions: ['Supervise junior IT staff.', 'Provide first-level support for IT issues.', 'Assist in the planning and execution of IT projects.'],
     status: 'Approved',
-    preparedBy: 'Manager Software Development',
-    preparedDate: '2025-09-24',
+    preparedBy: 'Manager',
+    preparedDate: '2025-10-01',
     approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Manager Software Development', date: '2025-09-24' },
-      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali', date: '2025-09-25' },
-      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-09-26' }
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
   {
     id: 4,
-    designation: 'Cybersecurity Analyst',
+    designation: 'Sr. Database Administrator',
     department: 'ICT',
-    section: 'Cybersecurity',
-    reportsTo: ['Senior Manager'],
-    reportingPositions: [],
-    qualification: ['BS in Cybersecurity'],
-    experience: '3+ years in a security operations role.',
-    skills: ['SIEM', 'IDS/IPS', 'Vulnerability Assessment', 'Incident Response'],
-    registrationLicense: ['CISSP', 'CompTIA Security+'],
-    jobSummary: 'Monitor, detect, and respond to cybersecurity threats to protect the organization\'s digital assets.',
-    jobFunctions: ['Monitor security alerts and conduct investigations.', 'Perform vulnerability scans and penetration testing.', 'Develop and maintain security policies and procedures.'],
+    section: 'Infrastructure',
+    reportsTo: ['Manager'],
+    reportingPositions: ['Database Administrator'],
+    qualification: ['BSCS'],
+    skills: ['Oracle', 'SQL Server', 'Performance Tuning', 'Backup & Recovery'],
+    experience: '7+ years of experience in database administration.',
+    registrationLicense: ['OCP'],
+    jobSummary: 'To manage, maintain, and secure the hospital\'s critical database systems, ensuring high availability and performance.',
+    jobFunctions: ['Install, configure, and upgrade database software.', 'Perform database backups and disaster recovery operations.', 'Monitor database performance and implement changes for improvement.'],
     status: 'Approved',
-    preparedBy: 'Senior Manager ICT',
-    preparedDate: '2025-09-14',
+    preparedBy: 'Manager',
+    preparedDate: '2025-10-01',
     approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Senior Manager ICT', date: '2025-09-14' },
-      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali', date: '2025-09-14' },
-      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-09-15' }
-    ]
-  },
-    {
-    id: 10,
-    designation: 'Chief Information Officer',
-    department: 'ICT',
-    section: 'Management',
-    reportsTo: ['CEO'],
-    reportingPositions: ['All ICT Staff'],
-    qualification: ['Masters in Information Technology'],
-    experience: '15+ years of experience in IT leadership roles.',
-    skills: ['IT Strategy', 'Budget Management', 'Vendor Management', 'Cybersecurity oversight'],
-    registrationLicense: ['N/A'],
-    jobSummary: 'Provide vision and leadership for developing and implementing information technology initiatives.',
-    jobFunctions: ['Lead IT strategic and operational planning to achieve business goals.', 'Direct the development and implementation of IT policies and procedures.', 'Oversee the management of all IT projects.'],
-    status: 'Approved',
-    preparedBy: 'CEO Office',
-    preparedDate: '2025-01-10',
-    approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'CEO', date: '2025-01-10' },
-      { role: 'Approved By (HOD)', status: 'Approved', approver: 'CEO', date: '2025-01-11' },
-      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-01-12' }
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
   {
     id: 5,
-    designation: 'Medical Officer',
-    department: 'Medical Services',
-    section: 'General Medicine',
-    reportsTo: ['Consultant Incharge'],
+    designation: 'Database Administrator',
+    department: 'ICT',
+    section: 'Infrastructure',
+    reportsTo: ['Sr. Database Administrator'],
     reportingPositions: [],
-    qualification: ['MBBS'],
-    skills: ['Patient assessment', 'Clinical diagnosis', 'Basic life support', 'Strong communication'],
-    experience: 'Completed 1-year house job.',
-    registrationLicense: ['PMDC'],
-    jobSummary: 'Provide high-quality medical care to patients in the general medicine department under the supervision of a consultant.',
-    jobFunctions: ['Conduct patient consultations and physical examinations.', 'Diagnose and treat illnesses.', 'Order and interpret diagnostic tests.'],
-    status: 'Pending HOD Approval',
-    preparedBy: 'Dr. Ahmad (Supervisor)',
-    preparedDate: '2025-09-28',
+    qualification: ['BSCS'],
+    skills: ['SQL', 'Database Management', 'Scripting'],
+    experience: '3+ years of experience.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To assist in the management and maintenance of the hospital\'s database systems.',
+    jobFunctions: ['Monitor database health and performance.', 'Assist with backup and recovery procedures.', 'Run database queries and generate reports as needed.'],
+    status: 'Approved',
+    preparedBy: 'Sr. Database Administrator',
+    preparedDate: '2025-10-01',
     approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Dr. Ahmad', date: '2025-09-28' },
-      { role: 'Approved By (HOD)', status: 'Pending' }
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Sr. Database Administrator', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 6,
+    designation: 'Software Engineer',
+    department: 'ICT',
+    section: 'Software Development',
+    reportsTo: ['Manager'],
+    reportingPositions: [],
+    qualification: ['BSCS'],
+    skills: ['React', 'Node.js', 'TypeScript', 'SQL'],
+    experience: '2+ years in software development.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To design, develop, and maintain software applications for the hospital.',
+    jobFunctions: ['Write clean, scalable code.', 'Collaborate with the team to define and ship new features.', 'Troubleshoot and debug applications.'],
+    status: 'Approved',
+    preparedBy: 'Manager',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 7,
+    designation: 'Analyst',
+    department: 'ICT',
+    section: 'Software Development',
+    reportsTo: ['Senior Analyst'],
+    reportingPositions: [],
+    qualification: ['BSCS', 'BS IT'],
+    skills: ['Data Analysis', 'SQL', 'Requirements Gathering'],
+    experience: '1+ year of experience in a related role.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To analyze system requirements and support the software development lifecycle.',
+    jobFunctions: ['Gather and document requirements from stakeholders.', 'Create process flow diagrams.', 'Perform quality assurance testing.'],
+    status: 'Approved',
+    preparedBy: 'Senior Analyst',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Senior Analyst', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
   {
     id: 8,
-    designation: 'Janitorial Supervisor',
-    department: 'Administration',
-    section: 'Housekeeping',
-    reportsTo: ['Admin Manager'],
-    reportingPositions: ['Janitorial Staff (x10)'],
-    qualification: ['High School Diploma'],
-    experience: '2+ years in a supervisory role',
-    skills: ['Team management', 'Cleaning protocols', 'Inventory management'],
+    designation: 'Senior Analyst',
+    department: 'ICT',
+    section: 'Software Development',
+    reportsTo: ['Manager'],
+    reportingPositions: ['Analyst'],
+    qualification: ['BSCS', 'BS IT'],
+    skills: ['Systems Analysis', 'SQL', 'Project Coordination'],
+    experience: '4+ years of experience in systems analysis.',
     registrationLicense: ['N/A'],
-    jobSummary: 'To oversee and coordinate the activities of the janitorial staff.',
-    jobFunctions: ['Assign tasks to staff and inspect completed work for conformance to standards.', 'Issue supplies and equipment.', 'Train new staff and recommend disciplinary actions.'],
-    status: 'Rejected',
-    preparedBy: 'Admin Dept.',
-    preparedDate: '2025-09-29',
+    jobSummary: 'To lead analysis efforts, define system requirements, and act as a liaison between business and technical teams.',
+    jobFunctions: ['Lead requirements gathering sessions.', 'Develop detailed system specifications.', 'Mentor junior analysts.'],
+    status: 'Approved',
+    preparedBy: 'Manager',
+    preparedDate: '2025-10-01',
     approvalHistory: [
-        { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Admin Manager', date: '2025-09-29' },
-        { role: 'Approved By (HOD)', status: 'Rejected', approver: 'Admin Director', date: '2025-09-30', comments: 'Job functions need to be more detailed.' }
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
   {
     id: 9,
-    designation: 'HR Manager',
-    department: 'Human Resource',
-    section: 'Operations',
-    reportsTo: ['Director HR'],
-    reportingPositions: ['HR Officer (x2)'],
-    qualification: ['MBA in HR'],
-    experience: '5+ years of experience in HR operations.',
-    skills: ['Employee Relations', 'Payroll', 'HRIS', 'Policy Development'],
-    registrationLicense: ['SHRM-CP'],
-    jobSummary: 'Manage the day-to-day HR operations, including employee relations, compensation, and benefits.',
-    jobFunctions: ['Develop and implement HR policies and procedures.', 'Oversee employee relations and resolve workplace issues.', 'Manage payroll and benefits administration.'],
+    designation: 'Network Administrator',
+    department: 'ICT',
+    section: 'Infrastructure',
+    reportsTo: ['Manager'],
+    reportingPositions: ['Network Technician'],
+    qualification: ['BS in Networking or IT'],
+    skills: ['Cisco', 'Routing & Switching', 'Firewalls', 'Network Security'],
+    experience: '4+ years in network administration.',
+    registrationLicense: ['CCNA'],
+    jobSummary: 'To maintain and administer the hospital\'s computer networks, ensuring high availability and security.',
+    jobFunctions: ['Install and configure network equipment.', 'Monitor network performance and troubleshoot issues.', 'Implement and maintain security measures.'],
     status: 'Approved',
-    preparedBy: 'Director HR',
-    preparedDate: '2025-08-19',
+    preparedBy: 'Manager',
+    preparedDate: '2025-10-01',
     approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Director HR', date: '2025-08-19' },
-      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Director HR', date: '2025-08-19' },
-      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-08-20' }
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
   {
+    id: 10,
+    designation: 'Network Technician',
+    department: 'ICT',
+    section: 'Infrastructure',
+    reportsTo: ['Network Administrator'],
+    reportingPositions: [],
+    qualification: ['Diploma in IT', 'Associate\'s Degree'],
+    skills: ['Network Cabling', 'Hardware Troubleshooting', 'Basic Networking'],
+    experience: '1+ year of hands-on experience.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To assist in the installation, maintenance, and troubleshooting of network infrastructure.',
+    jobFunctions: ['Install and terminate network cables.', 'Troubleshoot network connectivity issues for end-users.', 'Assist with the setup of network hardware.'],
+    status: 'Approved',
+    preparedBy: 'Network Administrator',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Network Administrator', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Mr. Ali (CIO)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  // --- Medical Services Department ---
+  {
     id: 11,
+    designation: 'Consultant Physician',
+    department: 'Medical Services',
+    section: 'Internal Medicine',
+    reportsTo: ['Medical Director'],
+    reportingPositions: ['Medical Officer', 'Registrar'],
+    qualification: ['MBBS', 'FCPS in Internal Medicine'],
+    skills: ['Clinical Diagnosis', 'Patient Management', 'Leadership'],
+    experience: '5+ years post-fellowship experience.',
+    registrationLicense: ['PMDC'],
+    jobSummary: 'To provide expert medical care to patients and lead the clinical team in the Internal Medicine department.',
+    jobFunctions: ['Diagnose and treat complex medical cases.', 'Supervise and train junior doctors.', 'Participate in clinical research and audits.'],
+    status: 'Approved',
+    preparedBy: 'Dr. Ahmad (Supervisor)',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Dr. Ahmad (Supervisor)', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Medical Director', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 12,
+    designation: 'Medical Officer',
+    department: 'Medical Services',
+    section: 'General Medicine',
+    reportsTo: ['Consultant Physician'],
+    reportingPositions: [],
+    qualification: ['MBBS'],
+    skills: ['Patient Assessment', 'Clinical Procedures', 'Communication'],
+    experience: 'Completed 1-year house job.',
+    registrationLicense: ['PMDC'],
+    jobSummary: 'Provide high-quality medical care to patients under the supervision of a consultant.',
+    jobFunctions: ['Conduct patient consultations and physical examinations.', 'Order and interpret diagnostic tests.', 'Maintain accurate medical records.'],
+    status: 'Approved',
+    preparedBy: 'Dr. Ahmad (Supervisor)',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Dr. Ahmad (Supervisor)', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Medical Director', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 13,
+    designation: 'Head Nurse',
+    department: 'Medical Services',
+    section: 'Nursing',
+    reportsTo: ['Nursing Director'],
+    reportingPositions: ['Charge Nurse'],
+    qualification: ['BScN', 'Masters in Nursing'],
+    skills: ['Ward Management', 'Staff Supervision', 'Quality Assurance'],
+    experience: '10+ years of nursing experience with 5+ in a leadership role.',
+    registrationLicense: ['PNC'],
+    jobSummary: 'To manage the nursing staff and operations of a specific unit or ward, ensuring high standards of patient care.',
+    jobFunctions: ['Supervise Charge Nurses and Staff Nurses.', 'Develop and implement nursing care plans and protocols.', 'Manage ward budget and resources.'],
+    status: 'Approved',
+    preparedBy: 'Nursing Director',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Nursing Director', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Dr. Ahmad (Supervisor)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 14,
+    designation: 'Charge Nurse',
+    department: 'Medical Services',
+    section: 'Nursing',
+    reportsTo: ['Head Nurse'],
+    reportingPositions: ['Staff Nurse'],
+    qualification: ['BScN'],
+    skills: ['Shift Management', 'Patient Care Coordination', 'Mentoring'],
+    experience: '5+ years of nursing experience.',
+    registrationLicense: ['PNC'],
+    jobSummary: 'To supervise and coordinate the nursing team during a specific shift, ensuring efficient and safe patient care.',
+    jobFunctions: ['Assign patients to nurses.', 'Provide clinical guidance and support to staff.', 'Handle immediate patient care issues and emergencies.'],
+    status: 'Approved',
+    preparedBy: 'Head Nurse',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Head Nurse', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Dr. Ahmad (Supervisor)', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 15,
     designation: 'Staff Nurse',
     department: 'Medical Services',
     section: 'Nursing',
     reportsTo: ['Charge Nurse'],
     reportingPositions: [],
     qualification: ['BScN', 'Diploma in General Nursing'],
-    skills: ['Patient care', 'Medication administration', 'IV cannulation', 'Vital signs monitoring'],
+    skills: ['Patient Care', 'Medication Administration', 'IV Cannulation'],
     experience: '1+ year of clinical experience.',
     registrationLicense: ['PNC'],
-    jobSummary: 'Provide direct patient care, administer medications, and collaborate with the healthcare team to ensure optimal patient outcomes.',
-    jobFunctions: ['Assess patient health problems and needs.', 'Develop and implement nursing care plans.', 'Maintain medical records.'],
+    jobSummary: 'Provide direct patient care, administer medications, and collaborate with the healthcare team.',
+    jobFunctions: ['Assess patient health needs.', 'Develop and implement nursing care plans.', 'Maintain medical records and report patient status.'],
     status: 'Approved',
-    preparedBy: 'Nursing Director',
+    preparedBy: 'Charge Nurse',
     preparedDate: '2025-10-01',
     approvalHistory: [
-      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Nursing Director', date: '2025-10-01' },
-      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Nursing Director', date: '2025-10-02' },
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Charge Nurse', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Dr. Ahmad (Supervisor)', date: '2025-10-02' },
       { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
     ]
   },
+  // --- Administration Department ---
+  {
+    id: 16,
+    designation: 'Admin Director',
+    department: 'Administration',
+    section: 'General Administration',
+    reportsTo: ['Hospital Director'],
+    reportingPositions: ['Admin Manager'],
+    qualification: ['MBA', 'Masters in Public Administration'],
+    skills: ['Operations Management', 'Policy Development', 'Leadership'],
+    experience: '15+ years in administration with 7+ in a senior role.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To lead the hospital\'s administrative departments, ensuring smooth and efficient non-clinical operations.',
+    jobFunctions: ['Oversee all administrative functions including housekeeping, patient relations, and security.', 'Develop and implement administrative policies.', 'Manage departmental budgets.'],
+    status: 'Approved',
+    preparedBy: 'Hospital Director',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Hospital Director', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Hospital Director', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 17,
+    designation: 'Admin Manager',
+    department: 'Administration',
+    section: 'General Administration',
+    reportsTo: ['Admin Director'],
+    reportingPositions: ['Support Staff Supervisors'],
+    qualification: ['BBA', 'MBA'],
+    skills: ['Facility Management', 'Vendor Relations', 'Supervision'],
+    experience: '5+ years in an administrative role.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To manage the day-to-day administrative operations of the hospital.',
+    jobFunctions: ['Supervise administrative staff.', 'Manage office supplies and equipment.', 'Coordinate with vendors and service providers.'],
+    status: 'Approved',
+    preparedBy: 'Admin Director',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Admin Director', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Admin Director', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 18,
+    designation: 'Support Staff',
+    department: 'Administration',
+    section: 'Housekeeping',
+    reportsTo: ['Admin Manager'],
+    reportingPositions: [],
+    qualification: ['Matriculation'],
+    skills: ['Cleaning', 'Teamwork', 'Punctuality'],
+    experience: 'Previous experience preferred.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To maintain cleanliness and hygiene throughout the hospital premises.',
+    jobFunctions: ['Perform daily cleaning duties in assigned areas.', 'Handle waste management as per hospital protocol.', 'Report any maintenance issues.'],
+    status: 'Approved',
+    preparedBy: 'Admin Manager',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Admin Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Admin Director', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  // --- Finance Department ---
+  {
+    id: 19,
+    designation: 'Chief Financial Officer',
+    department: 'Finance',
+    section: 'Accounts',
+    reportsTo: ['CEO'],
+    reportingPositions: ['Finance Manager'],
+    qualification: ['CA', 'ACCA', 'CFA'],
+    skills: ['Financial Strategy', 'Risk Management', 'Corporate Finance'],
+    experience: '15+ years of senior financial leadership.',
+    registrationLicense: ['Relevant Professional Certification'],
+    jobSummary: 'To direct and oversee all financial activities of the hospital, including financial planning, budgeting, and reporting.',
+    jobFunctions: ['Develop the hospital\'s financial strategy.', 'Ensure compliance with financial regulations.', 'Provide financial reports and insights to the board.'],
+    status: 'Approved',
+    preparedBy: 'CEO',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'CEO', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'CFO', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 20,
+    designation: 'Finance Manager',
+    department: 'Finance',
+    section: 'Accounts',
+    reportsTo: ['Chief Financial Officer'],
+    reportingPositions: ['Accountant'],
+    qualification: ['ACCA', 'CMA', 'MBA Finance'],
+    skills: ['Financial Reporting', 'Budgeting', 'Compliance'],
+    experience: '7+ years in financial management.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To manage the finance department\'s daily operations, including financial reporting, budgeting, and internal controls.',
+    jobFunctions: ['Prepare monthly and annual financial statements.', 'Oversee accounts payable/receivable.', 'Ensure compliance with tax regulations.'],
+    status: 'Approved',
+    preparedBy: 'CFO',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'CFO', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'CFO', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 21,
+    designation: 'Accountant',
+    department: 'Finance',
+    section: 'Accounts',
+    reportsTo: ['Finance Manager'],
+    reportingPositions: [],
+    qualification: ['B.Com', 'M.Com'],
+    skills: ['Bookkeeping', 'MS Excel', 'Financial Software'],
+    experience: '2+ years of accounting experience.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To perform accounting duties such as maintaining financial records, preparing reports, and reconciling accounts.',
+    jobFunctions: ['Process invoices and payments.', 'Reconcile bank statements.', 'Assist in the preparation of financial reports.'],
+    status: 'Approved',
+    preparedBy: 'Finance Manager',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Finance Manager', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'CFO', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  // --- Human Resource Department ---
+  {
+    id: 22,
+    designation: 'Head of HR',
+    department: 'Human Resource',
+    section: 'Operations',
+    reportsTo: ['CEO'],
+    reportingPositions: ['HR Manager'],
+    qualification: ['MBA in HR'],
+    skills: ['HR Strategy', 'Talent Management', 'Employee Relations'],
+    experience: '15+ years of HR experience with 7+ in a leadership role.',
+    registrationLicense: ['SHRM-SCP'],
+    jobSummary: 'To lead the Human Resources department, developing and implementing HR strategies that support the hospital\'s mission.',
+    jobFunctions: ['Oversee all HR functions including recruitment, compensation, and employee relations.', 'Develop HR policies and ensure compliance.', 'Advise senior management on HR matters.'],
+    status: 'Approved',
+    preparedBy: 'CEO',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'CEO', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Head of HR', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  },
+  {
+    id: 23,
+    designation: 'HR Officer',
+    department: 'Human Resource',
+    section: 'Talent Acquisition',
+    reportsTo: ['Head of HR'],
+    reportingPositions: [],
+    qualification: ['BBA in HR'],
+    skills: ['Recruitment', 'Onboarding', 'Communication'],
+    experience: '2+ years in a recruitment or HR generalist role.',
+    registrationLicense: ['N/A'],
+    jobSummary: 'To support the full recruitment lifecycle, from sourcing candidates to onboarding new hires.',
+    jobFunctions: ['Post job advertisements and screen applications.', 'Schedule and conduct interviews.', 'Prepare offer letters and manage onboarding paperwork.'],
+    status: 'Approved',
+    preparedBy: 'Head of HR',
+    preparedDate: '2025-10-01',
+    approvalHistory: [
+      { role: 'Prepared By (Supervisor)', status: 'Approved', approver: 'Head of HR', date: '2025-10-01' },
+      { role: 'Approved By (HOD)', status: 'Approved', approver: 'Head of HR', date: '2025-10-02' },
+      { role: 'Reviewed By (HR)', status: 'Reviewed', approver: 'HR Department', date: '2025-10-03' }
+    ]
+  }
 ];
 
 export const mockRequisitions: Requisition[] = [
@@ -394,7 +709,7 @@ export const mockRequisitions: Requisition[] = [
         fiscalYear: '2025-2026',
         positionType: 'Full-Time',
         budgetedStatus: 'Non-Budgeted',
-        supervisorName: 'Director HR',
+        supervisorName: 'Head of HR',
         supervisorUID: 'UID301',
         hodName: 'Dr. Adnan Gill',
         hodUID: 'UID300',
@@ -818,7 +1133,7 @@ export const mockAdvertisements: JobAdvertisement[] = [
 ];
 
 export const MOCK_PANELISTS: PanelMember[] = [
-    { name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false },
+    { name: 'Head of HR', role: 'Head of HR', status: 'Pending', notified: false },
     { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false },
     { name: 'Ms. Fatima Ali', role: 'Senior Manager (Technical)', status: 'Pending', notified: false },
     { name: 'Mr. Usman Ghani', role: 'External Subject Matter Expert', status: 'Pending', notified: false },
@@ -915,7 +1230,7 @@ export const mockCandidates: Candidate[] = [
     { id: 10, name: 'Hina Riaz', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-0123456-0', qualification: 'MBBS', experienceYears: 1, organization: 'Jinnah Hospital', contact: '0346-0001122', city: 'Lahore', remarks: 'Forwarded to Dr. Ahmed for evaluation.', status: 'Sent to Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-05' },
     { id: 11, name: 'Zainab Qayyum', positionAppliedFor: 'Accountant', department: 'Finance', section: 'Accounts', cnic: '35202-1122334-1', qualification: 'ACCA', experienceYears: 4, organization: 'Multinational Inc.', contact: '0321-1122334', city: 'Lahore', remarks: 'Awaiting feedback from Finance department.', status: 'Sent to Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-4', appliedDate: '2025-02-28' },
     { id: 12, name: 'Bilal Lashari', positionAppliedFor: 'Network Administrator', department: 'ICT', section: 'Infrastructure', cnic: '35202-2233445-2', qualification: 'BS IT', experienceYears: 5, organization: 'ISP Provider', contact: '0300-2233445', city: 'Lahore', remarks: 'Pending review from Infrastructure head.', status: 'Sent to Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-25' },
-    { id: 13, name: 'Maria Wasti', positionAppliedFor: 'HR Manager', department: 'Human Resource', section: 'Operations', cnic: '35202-3344556-3', qualification: 'MPA', experienceYears: 6, organization: 'FMCG Company', contact: '0321-3344556', city: 'Sialkot', remarks: 'Sent to Director HR for review.', status: 'Sent to Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-26' },
+    { id: 13, name: 'Maria Wasti', positionAppliedFor: 'HR Manager', department: 'Human Resource', section: 'Operations', cnic: '35202-3344556-3', qualification: 'MPA', experienceYears: 6, organization: 'FMCG Company', contact: '0321-3344556', city: 'Sialkot', remarks: 'Sent to Head of HR for review.', status: 'Sent to Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-26' },
 
     // --- Stage 8: Final Shortlisting ---
     // Status: Recommended by Department
@@ -931,7 +1246,7 @@ export const mockCandidates: Candidate[] = [
     { id: 22, name: 'Mehwish Hayat', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35202-3233445-2', qualification: 'BSCS', experienceYears: 4, organization: 'Game Studio', contact: '0321-3233445', city: 'Lahore', remarks: 'Candidate shortlisted. Needs panel.', status: 'Shortlisted for Interview', panelNominationStatus: 'Pending Nomination', interviewPanel: [], shortlistingRemarks: 'Strong technical skills in required stack. Fee verified.', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-20' },
     
     // Status: Shortlisted for Interview (Panel Nominated)
-    { id: 23, name: 'Humayun Saeed', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-4344556-3', qualification: 'MS Management', experienceYears: 11, organization: 'IT Services Co.', contact: '0313-4344556', city: 'Islamabad', remarks: 'Panel nominated. Ready for scheduling.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: true, preInterviewFormSubmitted: false, adReference: 'AD-1', appliedDate: '2025-10-22', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 23, name: 'Humayun Saeed', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-4344556-3', qualification: 'MS Management', experienceYears: 11, organization: 'IT Services Co.', contact: '0313-4344556', city: 'Islamabad', remarks: 'Panel nominated. Ready for scheduling.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Head of HR', role: 'Head of HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: true, preInterviewFormSubmitted: false, adReference: 'AD-1', appliedDate: '2025-10-22', attendanceStatus: 'Pending', documentChecklist: {} },
     { id: 24, name: 'Sohail Ahmed', positionAppliedFor: 'Registrar', department: 'Medical Services', section: 'Internal Medicine', cnic: '35202-5455667-4', qualification: 'FCPS', experienceYears: 6, organization: 'Shaukat Khanum', contact: '0322-5455667', city: 'Lahore', remarks: 'Medical board assigned. Scheduling in progress.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Chairman of Department', role: 'Member', status: 'Pending', notified: false }], interviewTime: '2025-11-28T10:00', interviewStatus: 'Scheduled', preInterviewFormSent: true, preInterviewFormSubmitted: true, preInterviewFormData: { '1st Prof Marks': '650 / 800', '2nd Prof Marks': '680 / 800', '3rd Prof Marks': '710 / 800', '4th Prof Marks': '700 / 800', '5th Prof Marks': '720 / 800', '1st Prof Attempts': 1, '2nd Prof Attempts': 1, '3rd Prof Attempts': 1, '4th Prof Attempts': 2, '5th Prof Attempts': 1, 'IMM Exam': 'Yes', 'IMM Exam Date': '2024-03-15', 'Graduating Institute': 'King Edward Medical University', 'House Job Hospital': 'Mayo Hospital, Lahore', 'Is Govt Teaching Institute': 'Yes', 'Is attached to Graduating Institute': 'Yes', 'University Positions': ['1. Gold Medal in Physiology'], 'Research Papers': ['1. "Effects of... " - Journal of Medicine, 2023'], }, adReference: 'AD-2', appliedDate: '2025-11-08', attendanceStatus: 'Pending', documentChecklist: {} },
     // FIX: Changed comments from string to object to align with new PanelEvaluation type.
     { id: 25, name: 'Bushra Ansari', positionAppliedFor: 'HR Manager', department: 'Human Resource', section: 'Operations', cnic: '35202-6566778-5', qualification: 'MBA HR', experienceYears: 7, organization: 'University', contact: '0300-6566778', city: 'Lahore', remarks: 'Panel is set.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'HOD of Concerned Department', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', evaluation: [{ panelMemberName: 'Hospital Director / Representative', scores: { 'Leadership': 9, 'HR Knowledge': 8, 'Communication': 9 }, comments: { 'General': 'Very strong candidate.'}}, { panelMemberName: 'HOD of Concerned Department', scores: { 'Leadership': 8, 'HR Knowledge': 9, 'Communication': 8 }, comments: { 'General': 'Excellent fit for the role.'}}], preInterviewFormSent: false, currentSalary: 250000, expectedSalary: 300000, adReference: 'AD-1', appliedDate: '2025-10-28' },
@@ -952,19 +1267,19 @@ export const mockCandidates: Candidate[] = [
     { id: 34, name: 'Dr. Bilal Ahmed', positionAppliedFor: 'Registrar', department: 'Medical Services', section: 'Internal Medicine', cnic: '35201-2222222-2', qualification: 'MBBS, FCPS Part 1', experienceYears: 4, organization: 'National Hospital', contact: '0302-2345678', city: 'Lahore', remarks: 'Panel set, ready for interview.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Chairman of Department', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-11' },
     { id: 35, name: 'Dr. Sana Javed', positionAppliedFor: 'Senior Registrar', department: 'Medical Services', section: 'Pediatrics', cnic: '35201-3333333-3', qualification: 'MBBS, FCPS', experienceYears: 6, organization: 'Children Hospital', contact: '0303-3456789', city: 'Lahore', remarks: 'Awaiting schedule confirmation.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Pending', notified: false }], interviewStatus: 'Pending Schedule', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-12' },
     { id: 36, name: 'Dr. Omar Farooq', positionAppliedFor: 'Clinical Fellow', department: 'Medical Services', section: 'Hepatology', cnic: '35201-4444444-4', qualification: 'MBBS, FCPS', experienceYears: 5, organization: 'PKLI & RC', contact: '0304-4567890', city: 'Lahore', remarks: 'Internal candidate.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Available', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-02T11:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-13', attendanceStatus: 'Pending', documentChecklist: {} },
-    { id: 37, name: 'Dr. Hina Riaz', positionAppliedFor: 'Post Graduate Resident', department: 'Medical Services', section: 'General Medicine', cnic: '35201-5555555-5', qualification: 'MBBS', experienceYears: 1, organization: 'House Job Completed', contact: '0305-5678901', city: 'Lahore', remarks: 'Fresh candidate for residency.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-14' },
+    { id: 37, name: 'Dr. Hina Riaz', positionAppliedFor: 'Post Graduate Resident', department: 'Medical Services', section: 'General Medicine', cnic: '35201-5555555-5', qualification: 'MBBS', experienceYears: 1, organization: 'House Job Completed', contact: '0305-5678901', city: 'Lahore', remarks: 'Fresh candidate for residency.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Head of HR', role: 'Head of HR', status: 'Pending', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-14' },
     // FIX: Corrected the malformed final candidate object which was causing a type error.
     { id: 38, name: 'Dr. Kashif Mehmood', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'Emergency', cnic: '35201-6666666-6', qualification: 'MBBS', experienceYears: 3, organization: 'Services Hospital', contact: '0306-6667788', city: 'Lahore', remarks: 'Experienced in emergency medicine.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Medical Director / Representative', role: 'Chairperson', status: 'Pending', notified: false }], interviewStatus: 'Pending Schedule', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-15' },
     // New Candidates for Evaluation Forms
     { id: 39, name: 'Dr. Zoya Ali', positionAppliedFor: 'Director Medical Services', department: 'Administration', section: 'Management', cnic: '35201-7777777-7', qualification: 'MBBS, MBA', experienceYears: 15, organization: 'National Hospital', contact: '0307-7778899', city: 'Lahore', remarks: 'Highly experienced candidate.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dean PKLI-HCS', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Hospital Director', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, currentSalary: 500000, expectedSalary: 600000, evaluation: [{ panelMemberName: 'Dean PKLI-HCS', scores: { 'leadership': 13, 'work_experience': 9, 'governance': 12, 'knowledge': 14, 'finance': 11, 'resource': 13, 'appearance': 12 }, comments: {}},{ panelMemberName: 'Hospital Director', scores: { 'leadership': 14, 'work_experience': 8, 'governance': 13, 'knowledge': 13, 'finance': 12, 'resource': 12, 'appearance': 14 }, comments: {}}], adReference: 'AD-2', appliedDate: '2025-11-01' },
     { id: 40, name: 'Dr. Fatima Iqbal', positionAppliedFor: 'Consultant', department: 'Medical Services', section: 'Hepatology', cnic: '35201-8888888-8', qualification: 'FCPS Hepatology', experienceYears: 7, organization: 'PKLI', contact: '0308-8889900', city: 'Lahore', remarks: 'Internal candidate, strong performer.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dean PKLI-HCS', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Medical Director', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, currentSalary: 350000, expectedSalary: 420000, evaluation: [{ panelMemberName: 'Dean PKLI-HCS', scores: { 'clinical_skills': 18, 'knowledge': 4, 'work_experience': 5, 'governance': 4, 'appearance': 5 }, comments: {}},{ panelMemberName: 'Medical Director', scores: { 'clinical_skills': 17, 'knowledge': 5, 'work_experience': 4, 'governance': 5, 'appearance': 4 }, comments: {}}], adReference: 'AD-2', appliedDate: '2025-11-02' },
-    { id: 41, name: 'Asif Raza', positionAppliedFor: 'Admin Officer', department: 'Administration', section: 'General Administration', cnic: '35201-9999999-9', qualification: 'MPA', experienceYears: 5, organization: 'Govt. Sector', contact: '0309-9990011', city: 'Lahore', remarks: 'Solid administrative background.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Director HR', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, currentSalary: 120000, expectedSalary: 150000, evaluation: [{ panelMemberName: 'Hospital Director', scores: { 'qualification': 4, 'work_experience': 5, 'technical_knowledge': 4, 'communication': 5, 'personality': 4 }, comments: {}},{ panelMemberName: 'Director HR', scores: { 'qualification': 5, 'work_experience': 4, 'technical_knowledge': 4, 'communication': 4, 'personality': 5 }, comments: {}}], adReference: 'AD-4', appliedDate: '2025-03-12' },
+    { id: 41, name: 'Asif Raza', positionAppliedFor: 'Admin Officer', department: 'Administration', section: 'General Administration', cnic: '35201-9999999-9', qualification: 'MPA', experienceYears: 5, organization: 'Govt. Sector', contact: '0309-9990011', city: 'Lahore', remarks: 'Solid administrative background.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Hospital Director', role: 'Chairperson', status: 'Available', notified: true }, { name: 'Head of HR', role: 'Member', status: 'Available', notified: true }], interviewStatus: 'Completed', preInterviewFormSent: false, currentSalary: 120000, expectedSalary: 150000, evaluation: [{ panelMemberName: 'Hospital Director', scores: { 'qualification': 4, 'work_experience': 5, 'technical_knowledge': 4, 'communication': 5, 'personality': 4 }, comments: {}},{ panelMemberName: 'Head of HR', scores: { 'qualification': 5, 'work_experience': 4, 'technical_knowledge': 4, 'communication': 4, 'personality': 5 }, comments: {}}], adReference: 'AD-4', appliedDate: '2025-03-12' },
     
     // --- Additional candidates for "My Nominations" ---
-    { id: 42, name: 'Bilal Ashraf', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-1231231-1', qualification: 'MBA', experienceYears: 10, organization: 'Tech Innovations', contact: '0301-1231231', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-23', attendanceStatus: 'Pending', documentChecklist: {} },
-    { id: 43, name: 'Imran Abbas Naqvi', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-2342342-2', qualification: 'MS Project Management', experienceYears: 13, organization: 'Global Solutions', contact: '0302-2342342', city: 'Karachi', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-24', attendanceStatus: 'Pending', documentChecklist: {} },
-    { id: 44, name: 'Feroze Khan', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-3453453-3', qualification: 'MBBS', experienceYears: 4, organization: 'Lahore General Hospital', contact: '0303-3453453', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-16', attendanceStatus: 'Pending', documentChecklist: {} },
-    { id: 45, name: 'Danish Taimoor', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-4564564-4', qualification: 'MBBS', experienceYears: 2, organization: 'Jinnah Hospital', contact: '0304-4564564', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Dr. Aisha Latif', role: 'Director HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-17', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 42, name: 'Bilal Ashraf', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-1231231-1', qualification: 'MBA', experienceYears: 10, organization: 'Tech Innovations', contact: '0301-1231231', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Head of HR', role: 'Head of HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-23', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 43, name: 'Imran Abbas Naqvi', positionAppliedFor: 'Senior Manager', department: 'ICT', section: 'Management', cnic: '35202-2342342-2', qualification: 'MS Project Management', experienceYears: 13, organization: 'Global Solutions', contact: '0302-2342342', city: 'Karachi', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Head of HR', role: 'Head of HR', status: 'Pending', notified: false }, { name: 'Mr. Khalid Mehmood', role: 'Head of Department ICT', status: 'Pending', notified: false }], interviewStatus: 'Scheduled', interviewTime: '2025-11-29T11:00', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-24', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 44, name: 'Feroze Khan', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-3453453-3', qualification: 'MBBS', experienceYears: 4, organization: 'Lahore General Hospital', contact: '0303-3453453', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Head of HR', role: 'Head of HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-16', attendanceStatus: 'Pending', documentChecklist: {} },
+    { id: 45, name: 'Danish Taimoor', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-4564564-4', qualification: 'MBBS', experienceYears: 2, organization: 'Jinnah Hospital', contact: '0304-4564564', city: 'Lahore', remarks: 'Panel nominated.', status: 'Shortlisted for Interview', panelNominationStatus: 'Panel Nominated', interviewPanel: [{ name: 'Head of HR', role: 'Head of HR', status: 'Pending', notified: true }], interviewStatus: 'Scheduled', interviewTime: '2025-12-01T10:00', preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-17', attendanceStatus: 'Pending', documentChecklist: {} },
 
     // --- Candidates for Candidate Comparison Screen ---
     {

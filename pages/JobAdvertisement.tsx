@@ -604,7 +604,7 @@ const JobAdvertisementPage: React.FC<JobAdvertisementProps> = ({ requisitions, a
                                                             onClick={() => handleSendToPortal(ad)}
                                                             className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold text-sm flex items-center"
                                                         >
-                                                            Send to Portal
+                                                            Send to Job Portal
                                                         </button>
                                                     </>
                                                 )}

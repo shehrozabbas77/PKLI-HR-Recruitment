@@ -362,28 +362,36 @@ const CandidateComparison: React.FC<CandidateComparisonProps> = ({
                                                         className="w-full text-sm p-1 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                                     />
                                                 </td>
-                                                <td className="px-4 py-4 text-center space-x-1 print-hidden">
-                                                    {/* Success Email Button */}
-                                                    <button
-                                                        onClick={() => { alert(`A success email/offer letter would be sent to ${c.name}. This feature can be built out next.`); }}
-                                                        disabled={c.status !== 'Recommended for Hire'}
-                                                        className="p-2 rounded-full transition-colors text-green-600 hover:bg-green-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                                                        title="Send Success Letter"
-                                                        aria-label="Send Success Letter"
-                                                    >
-                                                        <MailIcon className="w-5 h-5" />
-                                                    </button>
+                                                <td className="px-4 py-4 text-center print-hidden">
+                                                    <div className="flex justify-center items-start space-x-4">
+                                                        {/* Send Offer Letter Action */}
+                                                        <div className="flex flex-col items-center">
+                                                            <button
+                                                                onClick={() => { alert(`A success email/offer letter would be sent to ${c.name}. This feature can be built out next.`); }}
+                                                                disabled={c.status !== 'Recommended for Hire'}
+                                                                className="p-2 rounded-full transition-colors text-green-600 hover:bg-green-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                                                title="Send Success Letter"
+                                                                aria-label="Send Success Letter"
+                                                            >
+                                                                <MailIcon className="w-6 h-6" />
+                                                            </button>
+                                                            <span className="text-xs text-gray-500 mt-1">Send Offer</span>
+                                                        </div>
 
-                                                    {/* Regret Email Button */}
-                                                    <button
-                                                        onClick={() => setRegretModalCandidate(c)}
-                                                        disabled={c.status !== 'Rejected'}
-                                                        className="p-2 rounded-full transition-colors text-red-600 hover:bg-red-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
-                                                        title="Send Regret Letter"
-                                                        aria-label="Send Regret Letter"
-                                                    >
-                                                        <MailIcon className="w-5 h-5" />
-                                                    </button>
+                                                        {/* Send Regret Letter Action */}
+                                                        <div className="flex flex-col items-center">
+                                                            <button
+                                                                onClick={() => setRegretModalCandidate(c)}
+                                                                disabled={c.status !== 'Rejected'}
+                                                                className="p-2 rounded-full transition-colors text-red-600 hover:bg-red-100 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                                                title="Send Regret Letter"
+                                                                aria-label="Send Regret Letter"
+                                                            >
+                                                                <MailIcon className="w-6 h-6" />
+                                                            </button>
+                                                            <span className="text-xs text-gray-500 mt-1">Send Regret</span>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -936,21 +944,42 @@ const InterviewsPage: React.FC<InterviewsPageProps> = ({ candidates, setCandidat
                                           {formStatus}
                                       </span>
                                   </td>
-                                  <td className="px-6 py-4 text-center space-x-2">
-                                    <button onClick={() => handleOpenInviteModal(candidate)} disabled={!candidate.interviewTime} className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 disabled:text-gray-300 disabled:hover:bg-transparent" title="Send Interview Invite">
-                                      <MailIcon className="w-5 h-5"/>
-                                    </button>
-                                    <button 
-                                      onClick={() => handleSendPreInterviewForm(candidate.id)} 
-                                      disabled={!!candidate.preInterviewFormSubmitted}
-                                      className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed" 
-                                      title="Send Pre-Interview Form"
-                                    >
-                                      <ClipboardListIcon className="w-5 h-5"/>
-                                    </button>
-                                     <button onClick={() => handleOpenViewFormModal(candidate)} disabled={!candidate.preInterviewFormSent} className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 disabled:text-gray-300 disabled:hover:bg-transparent" title="View Submitted Form">
-                                      <EyeIcon className="w-5 h-5"/>
-                                    </button>
+                                  <td className="px-6 py-4 text-center">
+                                    <div className="flex justify-center items-start space-x-4">
+                                        <div className="flex flex-col items-center">
+                                            <button
+                                                onClick={() => handleOpenInviteModal(candidate)}
+                                                disabled={!candidate.interviewTime}
+                                                className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 disabled:text-gray-300 disabled:hover:bg-transparent"
+                                                title="Send Interview Invite"
+                                            >
+                                                <MailIcon className="w-6 h-6"/>
+                                            </button>
+                                            <span className="text-xs text-gray-500 mt-1 text-center">Send Invite</span>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <button
+                                                onClick={() => handleSendPreInterviewForm(candidate.id)}
+                                                disabled={!!candidate.preInterviewFormSubmitted}
+                                                className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 disabled:text-gray-300 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                                title="Send Pre-Interview Form"
+                                            >
+                                                <ClipboardListIcon className="w-6 h-6"/>
+                                            </button>
+                                            <span className="text-xs text-gray-500 mt-1 text-center">Send Form</span>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <button
+                                                onClick={() => handleOpenViewFormModal(candidate)}
+                                                disabled={!candidate.preInterviewFormSent}
+                                                className="p-2 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50 disabled:text-gray-300 disabled:hover:bg-transparent"
+                                                title="View Submitted Form"
+                                            >
+                                                <EyeIcon className="w-6 h-6"/>
+                                            </button>
+                                            <span className="text-xs text-gray-500 mt-1 text-center">View Form</span>
+                                        </div>
+                                    </div>
                                   </td>
                                 </tr>
                             );
