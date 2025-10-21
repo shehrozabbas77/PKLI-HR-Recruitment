@@ -1,3 +1,4 @@
+
 import type { Step, StaffingPosition, Requisition, Candidate, PanelMember, SelectionBoard, JobDescription, JobAdvertisement } from './types';
 import { PositionStatus } from './types';
 
@@ -1410,5 +1411,9 @@ export const mockCandidates: Candidate[] = [
     },
     {
         id: 304, name: 'Kamran Akmal', positionAppliedFor: 'Network Administrator', department: 'ICT', section: 'Infrastructure', cnic: '35201-4567890-3', qualification: 'BS IT', experienceYears: 2, organization: 'Small ISP', contact: '0303-4443333', city: 'Lahore', remarks: 'Candidate was not a good fit for the team.', status: 'Rejected', panelNominationStatus: 'Pending Nomination', interviewPanel: [], rejectionRemarks: 'Not recommended by department: Lacks enterprise-level experience.', preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-26'
-    }
+    },
+    // New candidates for testing workflow
+    { id: 1001, name: 'Asif Ali', positionAppliedFor: 'Medical Officer', department: 'Medical Services', section: 'General Medicine', cnic: '35202-1111111-1', qualification: 'MBBS', experienceYears: 2, organization: 'Shalamar Hospital', contact: '0300-1234567', city: 'Lahore', remarks: 'Meets criteria, sent to dept.', status: 'Sent to Department', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-2', appliedDate: '2025-11-06' },
+    { id: 1002, name: 'Bilal Khan', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35202-2222222-2', qualification: 'BSCS', experienceYears: 3, organization: 'Contour Software', contact: '0300-9876543', city: 'Lahore', remarks: 'Test conducted.', status: 'Test Completed', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-18', testScore: 85 },
+    { id: 1003, name: 'Sara Ahmed', positionAppliedFor: 'Software Engineer', department: 'ICT', section: 'Software Development', cnic: '35202-3333333-3', qualification: 'BSSE', experienceYears: 2, organization: 'Arbisoft', contact: '0321-4567890', city: 'Lahore', remarks: 'Scheduled for test.', status: 'Pending Test', panelNominationStatus: 'Pending Nomination', interviewPanel: [], preInterviewFormSent: false, adReference: 'AD-1', appliedDate: '2025-10-19' },
 ];

@@ -93,7 +93,9 @@ export type CandidateStatus =
   | 'Offer Sent'
   | 'Offer Accepted'
   | 'Pending Verification'
-  | 'Hired';
+  | 'Hired'
+  | 'Pending Test'
+  | 'Test Completed';
 
 export type PanelNominationStatus = 'Pending Nomination' | 'Panel Nominated';
 export type PanelMemberStatus = 'Pending' | 'Available' | 'Unavailable' | 'Representative Nominated';
@@ -154,6 +156,7 @@ export interface Candidate {
     attendanceStatus?: 'Pending' | 'Present' | 'Absent';
     documentChecklist?: Record<string, boolean>;
     offerEvidence?: string;
+    testScore?: number;
 }
 
 export interface AdvertisedPositionInfo {

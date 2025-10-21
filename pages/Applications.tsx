@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Candidate, CandidateStatus, JobAdvertisement } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/Card';
@@ -28,6 +29,9 @@ const statusColorMap: { [key in CandidateStatus]: string } = {
     'Offer Accepted': 'bg-sky-100 text-sky-800',
     'Pending Verification': 'bg-pink-100 text-pink-800',
     'Hired': 'bg-emerald-100 text-emerald-800',
+    // FIX: Added missing candidate statuses to resolve type error.
+    'Pending Test': 'bg-orange-100 text-orange-800',
+    'Test Completed': 'bg-cyan-100 text-cyan-800',
 };
 
 const stageConfig = {
@@ -508,8 +512,8 @@ const Applications: React.FC<ApplicationsProps> = ({ candidates, setCandidates, 
              if (candidate.status === 'Sent to Department') {
                 return (
                     <>
-                        <button onClick={() => handleStatusChange(candidate.id, 'Recommended by Department')} className={`${actionButtonClass} bg-green-500 hover:bg-green-600`}>Shortlisted</button>
-                        <button onClick={() => handleRejectClick(candidate)} className={`${actionButtonClass} bg-orange-500 hover:bg-orange-600`}>Not Shortlisted</button>
+                        <button onClick={() => handleStatusChange(candidate.id, 'Recommended by Department')} className={`${actionButtonClass} bg-green-500 hover:bg-green-600`}>Shortlist</button>
+                        <button onClick={() => handleRejectClick(candidate)} className={`${actionButtonClass} bg-orange-500 hover:bg-orange-600`}>Do Not Shortlist</button>
                     </>
                 );
             } else if (candidate.status === 'Pending Dept. Acknowledgement') {

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NAVIGATION_STRUCTURE, ALL_STEPS, SELECTION_BOARDS } from './constants';
 import Dashboard from './pages/Dashboard';
@@ -106,6 +107,7 @@ const App: React.FC = () => {
                     onNavigate={handleNavigate}
                />;
       case 11:
+        // FIX: The filter for attendance now correctly includes candidates who are scheduled but do not yet have an attendance status.
         return <Attendance 
                   candidates={candidates.filter(c => c.interviewStatus === 'Scheduled' || !!c.attendanceStatus)} 
                   setCandidates={setCandidates} 
