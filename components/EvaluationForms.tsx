@@ -341,36 +341,108 @@ const EvaluationFormSrRegistrar: React.FC<{ candidate: Candidate; data: PanelEva
 };
 
 const EvaluationFormPGR: React.FC<{ candidate: Candidate; data: PanelEvaluation; onChange: (field: string, value: any) => void; }> = ({ candidate, data, onChange }) => {
+    // Pre-interview scoring criteria
     const preInterviewComps = [
-        { key: 'mbbs_aggregate', label: 'MBBS Aggregate of Marks', max: 20 }, { key: 'mbbs_attempts', label: 'Attempts Marks in MBBS (for local graduates)', max: 5 },
-        { key: 'neb_exam', label: 'NEB Exam / NLE (for foreign graduates) for each step', max: 5 }, { key: 'fcps_part1', label: 'Part 1 FCPS / MD / MS/MDS Exam', max: 40 },
-        { key: 'house_job', label: 'House Job', max: 5 }, { key: 'experience_hcl', label: 'Experience at Primary / Secondary / Tertiary HCL', max: 10 },
-        { key: 'university_pos', label: 'Position at University Level examination', max: 5 }, { key: 'research_paper', label: 'Research Paper', max: 5 },
-    ];
-    const clinicalSkillsComps = [
-        { key: 'q1_history', label: 'Question 1: Clinical Scenario - History/Examination', max: 5 }, { key: 'q1_investigation', label: 'Question 1: Clinical Scenario - Investigations/Management', max: 5 },
-        { key: 'q2_ethical', label: 'Question 2: Ethical Question', max: 5 }, { key: 'q3_suitability', label: 'Question 3: Suitability and Commitment to Specialty', max: 5 },
-        { key: 'q4_application', label: 'Question 4: Application and Training', max: 5 }, { key: 'q5_communication', label: 'Question 5: Communication Marks', max: 5 },
+        { key: 'mbbs_aggregate', label: 'MBBS Aggregate of Marks', desc: '(Sum of marks achieved in all professionals divided by sum of total marks in all professionals, multiplied by 20)', max: 20 },
+        { key: 'mbbs_attempts', label: 'Attempts Marks in MBBS (for local grads) OR NEB/NLE (for foreign grads)', desc: 'See form for detailed breakdown of points per attempt.', max: 5 },
+        { key: 'fcps_part1', label: 'Part 1 FCPS / MD / MS/MDS Exam', desc: 'Part-1 marks obtained divided by total marks multiple by 40', max: 40 },
+        { key: 'experience_hcl', label: 'Experience at Primary / Secondary / Tertiary HCL', max: 10 },
+        { key: 'university_pos', label: 'Position at University Level examination', desc: '1 mark for 1st, 2nd, or 3rd position in Professional exam at University level.', max: 5 },
+        { key: 'research_paper', label: 'Research Paper', desc: '2.5 marks for each paper published in National and International Impact Factor journal.', max: 5 },
     ];
 
-    const preInterviewScore = useMemo(() => preInterviewComps.reduce((sum, c) => sum + (Number(data.scores[c.key]) || 0), 0), [data.scores]);
-    const clinicalScore = useMemo(() => clinicalSkillsComps.reduce((sum, c) => sum + (Number(data.scores[c.key]) || 0), 0), [data.scores]);
-    const mcqScore = Number(data.scores.mcq) || 0;
+    const houseJobOptions = [
+        { label: 'Select House Job category...', value: 0 },
+        { label: 'Punjab graduate, attached hospital', value: 5 },
+        { label: 'Punjab graduate, non-attached recognized hospital', value: 2.5 },
+        { label: 'Pakistan graduate (outside Punjab), recognized hospital', value: 2.5 },
+        { label: 'Foreign graduate, recognized hospital in Punjab', value: 2.5 },
+        { label: 'Not applicable / Other', value: 0 },
+    ];
     
+    const handleHouseJobChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        onChange('scores.house_job', parseFloat(e.target.value));
+    };
+    
+    // Clinical Skills criteria
+    const clinicalSkillsComps = [
+        { key: 'q1_history', label: 'Question 1: Clinical Scenario - History/Examination', max: 5 },
+        { key: 'q1_investigation', label: 'Question 1: Clinical Scenario - Investigations/Management', max: 5 },
+        { key: 'q2_ethical', label: 'Question 2: Ethical Question', max: 5 },
+        { key: 'q3_suitability', label: 'Question 3: Suitability and Commitment to Specialty', max: 5 },
+        { key: 'q4_application', label: 'Question 4: Application and Training', max: 5 },
+        { key: 'q5_communication', label: 'Question 5: Communication Marks', max: 5 },
+    ];
+
+    const preInterviewScore = useMemo(() => {
+        const score = preInterviewComps.reduce((sum, c) => sum + (Number(data.scores[c.key]) || 0), 0);
+        return score + (Number(data.scores.house_job) || 0);
+    }, [data.scores]);
+    
+    const clinicalScore = useMemo(() => clinicalSkillsComps.reduce((sum, c) => sum + (Number(data.scores[c.key]) || 0), 0), [data.scores]);
+    
+    const mcqScore = Number(data.scores.mcq_score) || 0;
+    const maxMcqScore = 100;
+
+    const finalWeightedScore = useMemo(() => {
+        const preInterviewWeight = (preInterviewScore / 90) * 60;
+        const mcqWeight = (mcqScore / maxMcqScore) * 20;
+        const clinicalWeight = (clinicalScore / 30) * 20;
+        return preInterviewWeight + mcqWeight + clinicalWeight;
+    }, [preInterviewScore, clinicalScore, mcqScore, maxMcqScore]);
+
     return (
          <div className="space-y-6">
             <EvaluationHeader title="INTERVIEW EVALUATION FORM FOR POST GRADUATE TRAINEE" candidate={candidate} />
-            <EvaluationFormSection title="Pre-Interview Scoring (90 Marks)">
-                {preInterviewComps.map(c => ( <CompetencyInput key={c.key} label={c.label} score={data.scores[c.key]} maxScore={c.max} hideComment comment="" onScoreChange={value => onChange(`scores.${c.key}`, value)} onCommentChange={()=>{}} /> ))}
-                <TotalScoreDisplay score={preInterviewScore} maxScore={90} title="Marks Achieved" />
+            
+            <EvaluationFormSection title="Academic & Professional Record (Weightage: 60%)">
+                {preInterviewComps.map(c => ( <CompetencyInput key={c.key} label={c.label} desc={c.desc} score={data.scores[c.key]} maxScore={c.max} hideComment comment="" onScoreChange={value => onChange(`scores.${c.key}`, value)} onCommentChange={()=>{}} /> ))}
+                
+                <div className="p-4 border rounded-lg bg-white shadow-sm">
+                    <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1">
+                            <label className="font-semibold text-gray-800">House Job</label>
+                            <select
+                                value={data.scores.house_job || 0}
+                                onChange={handleHouseJobChange}
+                                className="mt-2 w-full border-gray-300 rounded-md text-sm shadow-sm focus:ring-[#0076b6] focus:border-[#0076b6] p-2"
+                            >
+                                {houseJobOptions.map(opt => <option key={opt.label} value={opt.value}>{opt.label} ({opt.value} marks)</option>)}
+                            </select>
+                        </div>
+                         <div className="flex items-center space-x-2 pt-8">
+                            <input 
+                                type="number" 
+                                value={data.scores.house_job || 0}
+                                readOnly
+                                className="w-20 text-center bg-gray-100 border-gray-300 rounded-md text-lg font-bold shadow-sm py-2"
+                            />
+                            <span className="text-gray-500 text-lg">/ 5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <TotalScoreDisplay score={preInterviewScore} maxScore={90} title="Marks Achieved (from 90)" />
             </EvaluationFormSection>
-             <EvaluationFormSection title="MCQ Test Score">
-                <CompetencyInput label="MCQ Test Score (if applicable)" score={data.scores.mcq} maxScore={100} comment={data.comments.mcq} onScoreChange={value => onChange(`scores.mcq`, value)} onCommentChange={value => onChange(`comments.mcq`, value)} />
+
+            <EvaluationFormSection title="MCQ Test Score (Weightage: 20%)">
+                <CompetencyInput label="MCQ Test Score (if applicable)" score={mcqScore} maxScore={maxMcqScore} comment={data.comments.mcq_comments} onScoreChange={value => onChange('scores.mcq_score', value)} onCommentChange={value => onChange('comments.mcq_comments', value)} />
             </EvaluationFormSection>
-            <EvaluationFormSection title="Clinical Skills (30 Marks)">
+            
+            <EvaluationFormSection title="Clinical Skills (Weightage: 20%)">
                 {clinicalSkillsComps.map(c => ( <CompetencyInput key={c.key} label={c.label} score={data.scores[c.key]} maxScore={c.max} hideComment comment="" onScoreChange={value => onChange(`scores.${c.key}`, value)} onCommentChange={()=>{}} /> ))}
-                <TotalScoreDisplay score={clinicalScore} maxScore={30} title="Marks Achieved" />
+                <TotalScoreDisplay score={clinicalScore} maxScore={30} title="Marks Achieved (from 30)" />
             </EvaluationFormSection>
+            
+            <Card className="mt-6 bg-blue-50 border-blue-200">
+                <CardContent className="flex items-center justify-between p-4">
+                    <div className="text-xl font-bold text-blue-800">Final Weighted Score</div>
+                     <div className="text-center">
+                        <p className="text-4xl font-bold text-blue-600">{finalWeightedScore.toFixed(2)}%</p>
+                    </div>
+                </CardContent>
+            </Card>
+
             <EvaluationFooter data={data} onChange={onChange} />
         </div>
     );

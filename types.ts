@@ -140,6 +140,7 @@ export interface Candidate {
     shortlistingRemarks?: string;
     interviewTime?: string;
     interviewStatus?: InterviewStatus;
+    interviewInviteSent?: boolean;
     evaluation?: PanelEvaluation[];
     preInterviewFormSent?: boolean;
     preInterviewFormSubmitted?: boolean;
